@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>imagej</groupId>
+    <artifactId>whi-plugin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>Wound Healing Assay Plugin</name>
+    <description>This ImageJ plugin performs image segmentation and quantification for a WHA dataset</description>
+    <url>https://github.com/nurzhamanka/</url>
+    <inceptionYear>2012</inceptionYear>
+    <organization>
+        <name>[MY-ORGANIZATION-NAME]</name>
+        <url>[MY-ORGANIZATION-WEB-SITE]</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>CC0 1.0 Universal License</name>
+            <url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>[MY-GITHUB-ID]</id>
+            <name>[MY-FULL-NAME]</name>
+            <url>https://imagej.net/User:[MY-IMAGEJ-WIKI-ACCOUNT]</url>
+        </developer>
+    </developers>
+
+</project>
