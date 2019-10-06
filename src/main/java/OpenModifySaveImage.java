@@ -10,6 +10,11 @@ import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
+import net.imglib2.interpolation.InterpolatorFactory;
+import net.imglib2.interpolation.randomaccess.FloorInterpolatorFactory;
+import net.imglib2.interpolation.randomaccess.LanczosInterpolatorFactory;
+import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
+import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -47,6 +52,10 @@ public class OpenModifySaveImage implements Command {
     @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
     private File inputDir;
     
+    /** Factor by which to scale the image. */
+    @Parameter(label = "Scale factor")
+    private double factor = 2;
+    
     /** Location on disk to save the processed image. */
     @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
     private File outputDir;
@@ -77,6 +86,29 @@ public class OpenModifySaveImage implements Command {
         catch (final IOException exc) {
             log.error(exc);
         }
+    }
+    
+    private Dataset scaleImage(final Dataset dataset) {
+        // NB: We must do a raw cast through Img, because Dataset does not
+        // retain the recursive type parameter; it has an ImgPlus<RealType<?>>.
+        // This is invalid for routines that need Img<T extends RealType<T>>.
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        final Img<RealType<?>> result = scaleImage((Img) dataset.getImgPlus());
+        
+        // Finally, coerce the result back to an ImageJ Dataset object.
+        return new DefaultDataset(dataset.context(), new ImgPlus<>(result));
+    }
+    
+    private <T extends RealType<T>> Img<T> scaleImage(final Img<T> image) {
+        final double[] scaleFactors = new double[image.numDimensions()];
+        Arrays.fill(scaleFactors, factor);
+        
+        final InterpolatorFactory<T, RandomAccessible<T>> interpolator = new NearestNeighborInterpolatorFactory<>();
+        
+        // Perform the transformation using Ops.
+        final RandomAccessibleInterval<T> rai = //
+                ops.transform().scaleView(image, scaleFactors, interpolator);
+        return ImgView.wrap(rai, image.factory());
     }
     
     /*
