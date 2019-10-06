@@ -7,29 +7,67 @@
     <groupId>imagej</groupId>
     <artifactId>whi-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>7</source>
+                    <target>7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <name>Wound Healing Assay Plugin</name>
     <description>This ImageJ plugin performs image segmentation and quantification for a WHA dataset</description>
-    <url>https://github.com/nurzhamanka/</url>
-    <inceptionYear>2012</inceptionYear>
-    <organization>
-        <name>[MY-ORGANIZATION-NAME]</name>
-        <url>[MY-ORGANIZATION-WEB-SITE]</url>
-    </organization>
+    <url>https://github.com/nurzhamanka/whiplugin</url>
+    <inceptionYear>2019</inceptionYear>
     <licenses>
         <license>
-            <name>CC0 1.0 Universal License</name>
-            <url>http://creativecommons.org/publicdomain/zero/1.0/</url>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.en.html/</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <developers>
         <developer>
-            <id>[MY-GITHUB-ID]</id>
-            <name>[MY-FULL-NAME]</name>
-            <url>https://imagej.net/User:[MY-IMAGEJ-WIKI-ACCOUNT]</url>
+            <id>nurzhamanka</id>
+            <name>Nurzhan Sakenov</name>
+            <url>https://github.com/nurzhamanka</url>
+        </developer>
+        <developer>
+            <id>BekzhanKaspakov</id>
+            <name>Bekzhan Kaspakov</name>
+            <url>https://github.com/BekzhanKaspakov</url>
+        </developer>
+        <developer>
+            <id>madear</id>
+            <name>Madiyar Katranov</name>
+            <url>https://github.com/madear</url>
         </developer>
     </developers>
+    <contributors>
+        <contributor>
+            <name>Sholpan Kauanova</name>
+        </contributor>
+    </contributors>
+
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>imagej</artifactId>
+            <version>2.0.0-rc-71</version>
+        </dependency>
+    </dependencies>
 
 </project>
