@@ -4,20 +4,15 @@ import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
-import net.imglib2.FinalInterval;
-import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.ImgView;
 import net.imglib2.interpolation.InterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.FloorInterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.LanczosInterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -26,7 +21,6 @@ import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 @Plugin(type = Command.class, menuPath = "Open+Modify+Save Image")
@@ -62,6 +56,7 @@ public class OpenModifySaveImage implements Command {
     
     public void run() {
         try {
+            
             if (inputDir.isDirectory()) {
                 final File[] inputImages = inputDir.listFiles();
                 if (inputImages == null) {
@@ -99,6 +94,7 @@ public class OpenModifySaveImage implements Command {
         return new DefaultDataset(dataset.context(), new ImgPlus<>(result));
     }
     
+    @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> scaleImage(final Img<T> image) {
         final double[] scaleFactors = new double[image.numDimensions()];
         Arrays.fill(scaleFactors, factor);
@@ -106,9 +102,17 @@ public class OpenModifySaveImage implements Command {
         final InterpolatorFactory<T, RandomAccessible<T>> interpolator = new NearestNeighborInterpolatorFactory<>();
         
         // Perform the transformation using Ops.
-        final RandomAccessibleInterval<T> rai = //
+        RandomAccessibleInterval<T> rai = //
                 ops.transform().scaleView(image, scaleFactors, interpolator);
-        return ImgView.wrap(rai, image.factory());
+        
+        final Img<DoubleType> dImg = ops.convert().float64(image);
+        final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
+        final Img<DoubleType> sqrImg = (Img<DoubleType>) ops.run(SquareImage.class, normImg);
+        final Img<DoubleType> reNormImg = (Img<DoubleType>) ops.run(Normalize.class, sqrImg, new DoubleType(0.0), new DoubleType(65535.0));
+        final Img<T> fImg = (Img<T>) ops.convert().uint16(reNormImg);
+        return fImg;
+        //return ImgView.wrap(rai, image.factory());
+        
     }
     
     /*
