@@ -1,5 +1,8 @@
 import io.scif.services.DatasetIOService;
-import net.imagej.*;
+import net.imagej.Dataset;
+import net.imagej.DefaultDataset;
+import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
@@ -25,29 +28,23 @@ public class WoundHealing implements Command {
     private DatasetIOService datasetIOService;
     
     @Parameter
-    private DatasetService datasetService;
-    
-    // For scaling the image.
-    @Parameter
     private OpService ops;
     
-    // For logging errors.
     @Parameter
     private LogService log;
     
     // -- Inputs to the command --
     
-    /** Location on disk of the input image. */
+    /** Location on disk of the input images. */
     @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
     private File inputDir;
     
-    /** Location on disk to save the processed image. */
+    /** Location on disk to save the processed images. */
     @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
     private File outputDir;
     
     public void run() {
         try {
-
             if (inputDir.isDirectory()) {
                 final File[] inputImages = inputDir.listFiles();
                 if (inputImages == null) {
