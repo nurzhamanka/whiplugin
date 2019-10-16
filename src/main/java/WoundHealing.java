@@ -93,7 +93,7 @@ public class WoundHealing implements Command {
         final Img<DoubleType> dImg = ops.convert().float64(image);
         final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
         final Img<DoubleType> sqrImg = (Img<DoubleType>) ops.run(SquareImage.class, normImg);
-        final Img<DoubleType> dogImg = (Img<DoubleType>) ops.run(GaussianDifference.class, sqrImg, 2.0);
+        final Img<DoubleType> dogImg = (Img<DoubleType>) ops.run(GaussianDifference.class, sqrImg, 2.0, 1.0);
         final Img<DoubleType> reNormImg = (Img<DoubleType>) ops.run(Normalize.class, dogImg, new DoubleType(0.0), new DoubleType(65535.0));
         final Img<T> fImg = (Img<T>) ops.convert().uint16(reNormImg);
         return fImg;

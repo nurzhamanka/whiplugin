@@ -20,7 +20,10 @@ public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
     private Img<T> inImg;
 
     @Parameter(type = ItemIO.INPUT)
-    private double sigma;
+    private double sigma1;
+
+    @Parameter(type = ItemIO.INPUT)
+    private double sigma2;
 
     @Parameter(type = ItemIO.OUTPUT)
     private Img<T> outImg;
@@ -31,11 +34,14 @@ public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
 
     @Override
     public void run() {
-        @SuppressWarnings("unchecked")
-        final Img<T> newImg = inImg.factory().create(inImg);
+        @SuppressWarnings("unchecked") final Img<T> newImg = inImg.factory().create(inImg);
         outImg = newImg;
 
-        final RandomAccessibleInterval<T> res = ops.filter().gauss(inImg, sigma);
-        outImg = ImgView.wrap(res, inImg.factory());
+
+        final RandomAccessibleInterval<T> gaussian1 = ops.filter().gauss(inImg, sigma1);
+        final RandomAccessibleInterval<T> gaussian2 = ops.filter().gauss(inImg, sigma2);
+
+        //noinspection unchecked
+        outImg = (Img<T>) ops.run("dog", inImg, sigma1, sigma2);
     }
 }
