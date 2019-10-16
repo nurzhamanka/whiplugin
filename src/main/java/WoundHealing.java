@@ -1,17 +1,8 @@
 import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.DefaultDataset;
-import net.imagej.ImageJ;
-import net.imagej.ImgPlus;
+import net.imagej.*;
 import net.imagej.ops.OpService;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgView;
-import net.imglib2.interpolation.InterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
@@ -21,16 +12,18 @@ import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-@Plugin(type = Command.class, menuPath = "Open+Modify+Save Image")
-public class OpenModifySaveImage implements Command {
+@Plugin(type = Command.class, menuPath = "Wound Healing")
+public class WoundHealing implements Command {
     
     // -- Needed services --
     
     // For opening and saving images.
     @Parameter
     private DatasetIOService datasetIOService;
+    
+    @Parameter
+    private DatasetService datasetService;
     
     // For scaling the image.
     @Parameter
@@ -67,7 +60,7 @@ public class OpenModifySaveImage implements Command {
                         log.info("Processing " + image.getName());
                         // load the image
                         final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
-    
+                        
                         // scale the image
                         final Dataset result = scaleImage(currentImage);
     
@@ -120,6 +113,6 @@ public class OpenModifySaveImage implements Command {
         ij.launch(args);
         
         // Launch the "OpenScaleSaveImage" command.
-        ij.command().run(OpenModifySaveImage.class, true);
+        ij.command().run(WoundHealing.class, true);
     }
 }
