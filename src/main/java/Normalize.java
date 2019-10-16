@@ -3,9 +3,6 @@ import net.imagej.ops.Op;
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.type.numeric.real.FloatType;
 import org.scijava.ItemIO;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -54,9 +51,7 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
             else if (currentValue.compareTo(gmax) > 0)
                 gmax.set(currentValue);
         }
-        
-        log.info("Global minimum is " + gmin + "\nGlobal maximum is " + gmax);
-    
+
         // normalize the image
         // I_N(i,j) = (I(i,j) - gmin) * (max-min)/(gmax-gmin) + min
         
@@ -66,29 +61,17 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
         final T gdiff = gmax.copy();
         gdiff.sub(gmin);
     
-        log.info("diff is " + diff + "\nGdiff is " + gdiff);
-    
         Cursor<T> cIn = inImg.cursor();
         Cursor<T> cOut = outImg.cursor();
-        
-        int flag = 0;
         
         while (cIn.hasNext()) {
             cIn.fwd();
             cOut.fwd();
             cOut.get().set(cIn.get());
-            if (flag == 100) {
-                log.info("pixel was " + cOut.get().toString());
-            }
             cOut.get().sub(gmin);
             cOut.get().mul(diff);
             cOut.get().div(gdiff);
             cOut.get().add(min);
-            
-            if (flag == 100) {
-                log.info("pixel is now " + cOut.get().toString());
-            }
-            flag++;
         }
     }
 }

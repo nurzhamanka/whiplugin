@@ -39,10 +39,6 @@ public class WoundHealing implements Command {
     @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
     private File inputDir;
     
-    /** Factor by which to scale the image. */
-    @Parameter(label = "Scale factor")
-    private double factor = 2;
-    
     /** Location on disk to save the processed image. */
     @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
     private File outputDir;
@@ -114,7 +110,6 @@ public class WoundHealing implements Command {
         final ImageJ ij = new ImageJ();
         ij.launch(args);
         
-        // Launch the "OpenScaleSaveImage" command.
         ij.command().run(WoundHealing.class, true);
     }
 }
