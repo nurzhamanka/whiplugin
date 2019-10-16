@@ -34,10 +34,7 @@ public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
         @SuppressWarnings("unchecked")
         final Img<T> newImg = inImg.factory().create(inImg);
         outImg = newImg;
-//
-//        gauss(sigma, inImg, outImg);
-        // We can also blur the channels.
-//        double[] channelSigmas = sigma, sigma, 0
+
         final RandomAccessibleInterval<T> res = ops.filter().gauss(inImg, sigma);
         outImg = ImgView.wrap(res, inImg.factory());
     }
