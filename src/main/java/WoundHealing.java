@@ -91,10 +91,16 @@ public class WoundHealing implements Command {
     private <T extends RealType<T>> Img<T> scaleImage(final Img<T> image) {
         
         final Img<DoubleType> dImg = ops.convert().float64(image);
+        
         final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
+        
         final Img<DoubleType> sqrImg = (Img<DoubleType>) ops.run(SquareImage.class, normImg);
+        
+        
         final Img<DoubleType> reNormImg = (Img<DoubleType>) ops.run(Normalize.class, sqrImg, new DoubleType(0.0), new DoubleType(65535.0));
+        
         final Img<T> fImg = (Img<T>) ops.convert().uint16(reNormImg);
+        
         return fImg;
         //return ImgView.wrap(rai, image.factory());
         
