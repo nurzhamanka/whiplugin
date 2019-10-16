@@ -56,7 +56,7 @@ public class OpenModifySaveImage implements Command {
     
     public void run() {
         try {
-            
+
             if (inputDir.isDirectory()) {
                 final File[] inputImages = inputDir.listFiles();
                 if (inputImages == null) {
