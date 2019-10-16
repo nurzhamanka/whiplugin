@@ -4,14 +4,8 @@ import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
-import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgView;
-import net.imglib2.interpolation.InterpolatorFactory;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
@@ -21,7 +15,6 @@ import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 @Plugin(type = Command.class, menuPath = "Open+Modify+Save Image")
 public class OpenModifySaveImage implements Command {
