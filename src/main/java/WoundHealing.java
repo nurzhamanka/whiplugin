@@ -58,7 +58,7 @@ public class WoundHealing implements Command {
                         final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
                         
                         // scale the image
-                        final Dataset result = scaleImage(currentImage);
+                        final Dataset result = process(currentImage);
     
                         // save the image
                         datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
@@ -72,19 +72,19 @@ public class WoundHealing implements Command {
         }
     }
     
-    private Dataset scaleImage(final Dataset dataset) {
+    private Dataset process(final Dataset dataset) {
         // NB: We must do a raw cast through Img, because Dataset does not
         // retain the recursive type parameter; it has an ImgPlus<RealType<?>>.
         // This is invalid for routines that need Img<T extends RealType<T>>.
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        final Img<RealType<?>> result = scaleImage((Img) dataset.getImgPlus());
+        final Img<RealType<?>> result = process((Img) dataset.getImgPlus());
         
         // Finally, coerce the result back to an ImageJ Dataset object.
         return new DefaultDataset(dataset.context(), new ImgPlus<>(result));
     }
     
     @SuppressWarnings("unchecked")
-    private <T extends RealType<T>> Img<T> scaleImage(final Img<T> image) {
+    private <T extends RealType<T>> Img<T> process(final Img<T> image) {
         
         final Img<DoubleType> dImg = ops.convert().float64(image);
         final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
