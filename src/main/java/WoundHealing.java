@@ -12,6 +12,8 @@ import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Plugin(type = Command.class, menuPath = "Wound Healing")
 public class WoundHealing implements Command {
@@ -51,7 +53,10 @@ public class WoundHealing implements Command {
                 if (inputImages == null) {
                     log.error("Input folder is empty");
                 } else {
+                    int total = inputImages.length;
+                    final List<Long> ts = new ArrayList<>();
                     for (File image : inputImages) {
+                        long startTime = System.currentTimeMillis();
                         if (image.getName().contains("DS_Store")) continue;
                         log.info("Processing " + image.getName());
                         // load the image
@@ -62,8 +67,14 @@ public class WoundHealing implements Command {
     
                         // save the image
                         datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
-                        log.info(image.getName() + " saved.");
+                        long endTime = System.currentTimeMillis();
+                        long fd = endTime - startTime;
+                        log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
+                        ts.add(fd);
                     }
+                    double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
+
+                    log.info( "Average time = " + average/1000.0 + "s.");
                 }
             }
         }
