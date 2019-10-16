@@ -96,14 +96,6 @@ public class OpenModifySaveImage implements Command {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> scaleImage(final Img<T> image) {
-        final double[] scaleFactors = new double[image.numDimensions()];
-        Arrays.fill(scaleFactors, factor);
-        
-        final InterpolatorFactory<T, RandomAccessible<T>> interpolator = new NearestNeighborInterpolatorFactory<>();
-        
-        // Perform the transformation using Ops.
-        RandomAccessibleInterval<T> rai = //
-                ops.transform().scaleView(image, scaleFactors, interpolator);
         
         final Img<DoubleType> dImg = ops.convert().float64(image);
         final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
