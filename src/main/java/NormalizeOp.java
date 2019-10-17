@@ -1,7 +1,6 @@
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
-import net.imglib2.IterableInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
@@ -45,8 +44,9 @@ public class NormalizeOp<T extends RealType<T>> extends AbstractOp {
         gmin.set(currentValue);
         gmax.set(currentValue);
 
-        final IterableInterval<T> ii = ops.image().normalize(inImg, gmin, gmax, min, max);
-        outImg = (Img<T>) ii;
+        @SuppressWarnings("unchecked")
+        final Img<T> ii = (Img<T>) ops.run("normalize", inImg, gmin, gmax, min, max);
+        outImg = ii;
         log.info("Normalize success.");
     }
 }

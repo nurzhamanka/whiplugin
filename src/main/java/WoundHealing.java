@@ -94,6 +94,8 @@ public class WoundHealing implements Command {
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
         
+        // STEP 1: Normalize
+        
         final Img<DoubleType> dImg = ops.convert().float64(image);
         final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
         final Img<DoubleType> sqrImg = (Img<DoubleType>) ops.run(SquareImage.class, normImg);
@@ -103,7 +105,6 @@ public class WoundHealing implements Command {
         
         return fImg;
         //return ImgView.wrap(rai, image.factory());
-        
     }
     
     /*
