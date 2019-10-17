@@ -1,11 +1,7 @@
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
-import net.imglib2.Cursor;
-import net.imglib2.algorithm.morphology.BlackTopHat;
 import net.imglib2.algorithm.morphology.StructuringElements;
 import net.imglib2.algorithm.morphology.TopHat;
-import net.imglib2.algorithm.neighborhood.DiamondShape;
-import net.imglib2.algorithm.neighborhood.HyperSphereShape;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
@@ -14,7 +10,6 @@ import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Plugin(type = Op.class, name = "tophatimage")

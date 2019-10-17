@@ -94,17 +94,32 @@ public class WoundHealing implements Command {
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
         
-        // STEP 1: Normalize
+        // convert to a DoubleType Img
+        Img<DoubleType> img = ops.convert().float64(image);
         
-        final Img<DoubleType> dImg = ops.convert().float64(image);
-        final Img<DoubleType> normImg = (Img<DoubleType>) ops.run(Normalize.class, dImg, new DoubleType(0.0), new DoubleType(1.0));
-        final Img<DoubleType> sqrImg = (Img<DoubleType>) ops.run(SquareImage.class, normImg);
-        final Img<DoubleType> dogImg = (Img<DoubleType>) ops.run(GaussianDifference.class, sqrImg, 2.0, 1.0);
-        final Img<DoubleType> reNormImg = (Img<DoubleType>) ops.run(Normalize.class, dogImg, new DoubleType(0.0), new DoubleType(65535.0));
-        final Img<T> fImg = (Img<T>) ops.convert().uint16(reNormImg);
+        // normalize to [0, 1]
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+    
+        // square each pixel
+        img = (Img<DoubleType>) ops.run(SquareImage.class, img);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+    
+        // difference of Gaussians TODO
+        img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2.0, 1.0);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        
+        // entropy filter
+        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+    
+        // TopHat morphology filtering
+        img = (Img<DoubleType>) ops.run(TophatImage.class, img);
+    
+        // final normalization for saving (soon to be replaced)
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
+        final Img<T> fImg = (Img<T>) ops.convert().uint16(img);
         
         return fImg;
-        //return ImgView.wrap(rai, image.factory());
     }
     
     /*
@@ -112,10 +127,9 @@ public class WoundHealing implements Command {
      * directly from Eclipse (or other IDE).
      *
      * It will launch ImageJ and then run this command using the CommandService.
-     * This is equivalent to clicking "Tutorials>Open+Scale+Save Image" in the UI.
      */
     public static void main(final String... args) throws Exception {
-        // Launch ImageJ as usual.
+        
         final ImageJ ij = new ImageJ();
         ij.launch(args);
         
