@@ -120,12 +120,13 @@ public class WoundHealing implements Command {
         img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 20);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
         
-        final Img<BitType> binImg = (Img<BitType>) ops.run(Threshold.class, img);
+        // get the binary mask
+        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
     
-        // final normalization for saving (soon to be replaced)
+        // final normalization for saving (soon to be replaced, probably)
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
-        final Img<T> fImg = (Img<T>) ops.convert().uint16(img);
+        final Img<T> fImg = (Img<T>) ops.convert().uint8(img);
         
         return fImg;
     }
