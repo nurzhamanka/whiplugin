@@ -5,6 +5,7 @@ import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
@@ -23,7 +24,6 @@ public class WoundHealing implements Command {
     
     // -- Needed services --
     
-    // For opening and saving images.
     @Parameter
     private DatasetIOService datasetIOService;
     
@@ -114,6 +114,14 @@ public class WoundHealing implements Command {
     
         // TopHat morphology filtering
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        
+        // average filter
+        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 20);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        
+        final Img<BitType> binImg = (Img<BitType>) ops.run(Threshold.class, img);
+        img = ops.convert().float64(binImg);
     
         // final normalization for saving (soon to be replaced)
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
