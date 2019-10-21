@@ -122,7 +122,12 @@ public class WoundHealing implements Command {
         
         final Img<BitType> binImg = (Img<BitType>) ops.run(Threshold.class, img);
         img = ops.convert().float64(binImg);
-    
+
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+
+        //close - dilate - close - erode
+        img = (Img<DoubleType>) ops.run(MorphologicalOps.class, img);
+
         // final normalization for saving (soon to be replaced)
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
         final Img<T> fImg = (Img<T>) ops.convert().uint16(img);
