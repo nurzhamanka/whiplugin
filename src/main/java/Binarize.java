@@ -35,6 +35,7 @@ public class Binarize extends AbstractOp {
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
         // compute the threshold
         final DoubleType threshold = ops.stats().mean(inImg);
 //        final DoubleType imgStdev = ops.stats().stdDev(inImg);
@@ -44,16 +45,25 @@ public class Binarize extends AbstractOp {
         final Img<BitType> preOutImg = (Img<BitType>) ops.threshold().apply(inImg, threshold);
         outImg = preOutImg.factory().create(preOutImg);
         ops.image().invert(outImg, preOutImg);
+        log.info("--- Filling holes...");
         outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
-        
-        List<Shape> disks1 = StructuringElements.disk(1, 2, 4);
-        List<Shape> disks3 = StructuringElements.disk(3, 2, 4);
+        log.info("--- Holes filled.");
+        List<Shape> disk1 = StructuringElements.disk(1, 2);
+        List<Shape> disk3 = StructuringElements.disk(3, 2);
         List<Shape> rectangles = StructuringElements.rectangle(new int[]{2,2});
     
-        outImg = Closing.close(outImg, rectangles,4);
-        outImg = Dilation.dilate(outImg, disks1, 4);
-        outImg = Closing.close(outImg, disks1, 4);
-        outImg = Erosion.erode(outImg, disks3, 4);
+        log.info("--- Closing...");
+        outImg = Closing.close(outImg, rectangles, 4);
+        log.info("--- Dilating...");
+        outImg = Dilation.dilate(outImg, disk1, 4);
+        log.info("--- Closing...");
+        outImg = Closing.close(outImg, disk1, 4);
+        log.info("--- Eroding...");
+        outImg = Erosion.erode(outImg, disk3, 4);
+    
+        long endTime = System.currentTimeMillis();
+        long fd = endTime - startTime;
+        log.info("Binarize: " + fd / 1000.0 + "s.");
     }
     
 }

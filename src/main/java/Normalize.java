@@ -30,7 +30,8 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
     
     @Override
     public void run() {
-        @SuppressWarnings("unchecked")
+        long startTime = System.currentTimeMillis();
+        
         final Img<T> newImg = inImg.factory().create(inImg);
         outImg = newImg;
         
@@ -73,5 +74,9 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
             cOut.get().div(gdiff);
             cOut.get().add(min);
         }
+    
+        long endTime = System.currentTimeMillis();
+        long fd = endTime - startTime;
+        log.info("Normalization: " + fd / 1000.0 + "s.");
     }
 }

@@ -22,6 +22,7 @@ public class SquareImage<T extends RealType<T>> extends AbstractOp {
     
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
         @SuppressWarnings("unchecked")
         final Img<T> newImg = inImg.factory().create(inImg);
         outImg = newImg;
@@ -36,5 +37,8 @@ public class SquareImage<T extends RealType<T>> extends AbstractOp {
             cOut.get().set(srcVal);
             cOut.get().mul(srcVal);
         }
+        long endTime = System.currentTimeMillis();
+        long fd = endTime - startTime;
+        log.info("Square Image: " + fd / 1000.0 + "s.");
     }
 }

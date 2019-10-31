@@ -2,9 +2,14 @@ import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccess;
+import net.imglib2.algorithm.fft2.FFTConvolution;
 import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
 import net.imglib2.img.ImgView;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.RealSum;
 import org.scijava.ItemIO;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -32,6 +37,9 @@ public class HybridFilter extends AbstractOp {
 
     @Override
     public void run() {
+    
+        long startTime = System.currentTimeMillis();
+        
         // enforce that the window size is congruent to 1 modulo 4
         if (winSize % 4 != 1)
             log.error(new Exception("Window size must be of the form 4k+1."));
@@ -41,37 +49,13 @@ public class HybridFilter extends AbstractOp {
         final long[] imageDims = {inImg.dimension(0), inImg.dimension(1)};
         final long[] kernelDims = {winSize, winSize};
         
-        final Img<DoubleType>[] avgker = new Img[4];
-        
-        // "North-West" kernel (a)
-        avgker[0] = ops.create().img(kernelDims);
-        RandomAccess<DoubleType> nwRa = avgker[0].randomAccess();
-        for (long i = 0; i < winSize; i++) {
-            final long[] pos = {i, winSize/2};
-            nwRa.setPosition(pos);
-            nwRa.get().set(1);
-        }
-        
-        // "North-East" kernel (b)
-        avgker[1] = ImgView.wrap(ops.transform().rotateView(avgker[0], 1, 0), avgker[0].factory());
-        
-        // "South-East" kernel (c)
-        avgker[2] = ops.create().img(kernelDims);
-        RandomAccess<DoubleType> seRa = avgker[2].randomAccess();
-        for (long i = 0; i < winSize; i++) {
-            final long[] pos = {i, i};
-            seRa.setPosition(pos);
-            seRa.get().set(1);
-        }
-    
-        // "South-East" kernel (d)
-        avgker[3] = ImgView.wrap(ops.transform().rotateView(avgker[0], 1, 0), avgker[2].factory());
     
         // convolution of the input image with the 4 kernels
         final Img<DoubleType>[] avgs = new Img[4];
         final RandomAccess<DoubleType>[] ras = new RandomAccess[4];
         for (int i = 0; i < 4; i++) {
-            avgs[i] = ImgView.wrap(ops.filter().convolve(inImg, avgker[i]), inImg.factory());
+            avgs[i] = inImg.copy();
+            new FFTConvolution<>(avgs[i], Helper.getKernel(i, kernelDims, winSize, ops));
             ras[i] = avgs[i].randomAccess();
         }
         
@@ -87,6 +71,66 @@ public class HybridFilter extends AbstractOp {
                 outRa.get().set(Math.min(Math.min(ras[0].get().get(), ras[1].get().get()),
                         Math.min(ras[2].get().get(), ras[3].get().get())));
             }
+        }
+    
+        long endTime = System.currentTimeMillis();
+        long fd = endTime - startTime;
+        log.info("Hybrid Entropy Filter: " + fd / 1000.0 + "s.");
+    }
+    
+    private static class Helper {
+        static Img<DoubleType>[] avgker;
+        static Img<DoubleType> getKernel(int n, long[] kernelDims, long winSize, OpService ops) {
+            if (avgker == null) {
+                final ImgFactory<DoubleType> imgFactory = new ArrayImgFactory<>(new DoubleType());
+                
+                avgker = new Img[4];
+                
+                // "North-West" kernel (a)
+                avgker[0] = imgFactory.create(kernelDims);
+                RandomAccess<DoubleType> nwRa = avgker[0].randomAccess();
+                for (long i = 0; i < winSize; i++) {
+                    final long[] pos = {i, winSize/2};
+                    nwRa.setPosition(pos);
+                    nwRa.get().set(1);
+                }
+                norm(avgker[0]);
+    
+                // "North-East" kernel (b)
+                avgker[1] = ImgView.wrap(ops.transform().rotateView(avgker[0], 1, 0), avgker[0].factory());
+    
+                // "South-East" kernel (c)
+                avgker[2] = imgFactory.create(kernelDims);
+                RandomAccess<DoubleType> seRa = avgker[2].randomAccess();
+                for (long i = 0; i < winSize; i++) {
+                    final long[] pos = {i, i};
+                    seRa.setPosition(pos);
+                    seRa.get().set(1);
+                }
+                norm(avgker[0]);
+    
+                // "South-East" kernel (d)
+                avgker[3] = ImgView.wrap(ops.transform().rotateView(avgker[0], 1, 0), avgker[2].factory());
+            }
+            return avgker[n];
+        }
+    
+        private static void norm( final Iterable<DoubleType> iterable )
+        {
+            final double sum = sumImage( iterable );
+        
+            for ( final DoubleType type : iterable )
+                type.setReal( type.get() / sum );
+        }
+    
+        private static < T extends RealType< T >> double sumImage(final Iterable< T > iterable )
+        {
+            final RealSum sum = new RealSum();
+        
+            for ( final T type : iterable )
+                sum.add( type.getRealDouble() );
+        
+            return sum.getSum();
         }
     }
 }
