@@ -31,13 +31,28 @@ public class AverageFilter extends AbstractOp {
 
     @Override
     public void run() {
+    
+        long startTime = System.currentTimeMillis();
         
         final long[] kernelDims = {size, size};
         
         // averaging kernel
-        Img<DoubleType> kernel = ops.create().img(kernelDims);
-        kernel = (Img<DoubleType>) ops.math().add(kernel, new DoubleType(1.0));
+        Img<DoubleType> kernel = Helper.getKernel(kernelDims, ops);
         
         outImg =  ImgView.wrap(ops.filter().convolve(inImg, kernel), inImg.factory());
+    
+        long endTime = System.currentTimeMillis();
+        long fd = endTime - startTime;
+        log.info("Mean Smoothing: " + fd / 1000.0 + "s.");
+    }
+    
+    private static class Helper {
+        static Img<DoubleType> kernel;
+        static Img<DoubleType> getKernel(long[] kernelDims, OpService ops) {
+            if (kernel != null) return kernel;
+            kernel = ops.create().img(kernelDims);
+            kernel = (Img<DoubleType>) ops.math().add(kernel, new DoubleType(1.0));
+            return kernel;
+        }
     }
 }

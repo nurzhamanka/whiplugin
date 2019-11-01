@@ -1,3 +1,4 @@
+import io.scif.config.SCIFIOConfig;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -12,11 +13,13 @@ import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Plugin(type = Command.class, menuPath = "Wound Healing")
@@ -33,6 +36,9 @@ public class WoundHealing implements Command {
     @Parameter
     private LogService log;
     
+    @Parameter
+    private UIService ui;
+    
     // -- Inputs to the command --
     
     /** Location on disk of the input images. */
@@ -43,6 +49,7 @@ public class WoundHealing implements Command {
     @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
     private File outputDir;
     
+    
     public void run() {
         try {
             if (inputDir.isDirectory()) {
@@ -52,15 +59,20 @@ public class WoundHealing implements Command {
                 } else {
                     int total = inputImages.length;
                     final List<Long> ts = new ArrayList<>();
+                    SCIFIOConfig config = new SCIFIOConfig();
+                    log.info("Config modes: " + Arrays.toString(config.imgOpenerGetImgModes()));
+                    config.imgOpenerSetImgModes(SCIFIOConfig.ImgMode.ARRAY);
                     for (File image : inputImages) {
                         long startTime = System.currentTimeMillis();
                         if (image.getName().contains("DS_Store")) continue;
                         log.info("Processing " + image.getName());
                         // load the image
-                        final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
+                        final Dataset currentImage = datasetIOService.open(image.getAbsolutePath(), config);
+//                        ui.show("Current Image :)", currentImage);
                         
                         // scale the image
                         final Dataset result = process(currentImage);
+//                        ui.show("Processed Image :)", result);
     
                         // save the image
                         datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
@@ -85,7 +97,7 @@ public class WoundHealing implements Command {
         // retain the recursive type parameter; it has an ImgPlus<RealType<?>>.
         // This is invalid for routines that need Img<T extends RealType<T>>.
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        final Img<RealType<?>> result = process((Img) dataset.getImgPlus());
+        final Img<RealType<?>> result = process((Img) dataset.getImgPlus().getImg());
         
         // Finally, coerce the result back to an ImageJ Dataset object.
         return new DefaultDataset(dataset.context(), new ImgPlus<>(result));
@@ -93,6 +105,8 @@ public class WoundHealing implements Command {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
+        
+        log.info("Image type is " + image.getClass());
         
         // convert to a DoubleType Img
         Img<DoubleType> img = ops.convert().float64(image);
@@ -104,7 +118,7 @@ public class WoundHealing implements Command {
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
     
-        // difference of Gaussians TODO
+        // difference of Gaussians
         img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2.0, 1.0);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
         
@@ -120,17 +134,12 @@ public class WoundHealing implements Command {
         img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 20);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
         
-        final Img<BitType> binImg = (Img<BitType>) ops.run(Threshold.class, img);
+        // get the binary mask
+        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
 
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-
-        //close - dilate - close - erode
-        img = (Img<DoubleType>) ops.run(MorphologicalOps.class, img);
-
-        // final normalization for saving (soon to be replaced)
         img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
-        final Img<T> fImg = (Img<T>) ops.convert().uint16(img);
+        final Img<T> fImg = (Img<T>) ops.convert().uint8(img);
         
         return fImg;
     }
