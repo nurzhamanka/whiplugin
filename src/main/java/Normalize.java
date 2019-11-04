@@ -3,6 +3,7 @@ import net.imagej.ops.Op;
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.ItemIO;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -10,6 +11,7 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Iterator;
 
+@SuppressWarnings("unchecked")
 @Plugin(type = Op.class, name = "imnorm")
 public class Normalize<T extends RealType<T>> extends AbstractOp {
     
@@ -17,10 +19,10 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
     private Img<T> inImg;
     
     @Parameter(type = ItemIO.INPUT)
-    private T min;
+    private double min;
 
     @Parameter(type = ItemIO.INPUT)
-    private T max;
+    private double max;
     
     @Parameter(type = ItemIO.OUTPUT)
     private Img<T> outImg;
@@ -30,10 +32,11 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
     
     @Override
     public void run() {
-        long startTime = System.currentTimeMillis();
         
-        final Img<T> newImg = inImg.factory().create(inImg);
-        outImg = newImg;
+        log.info("Normalization to [" + min + ", " + max + "]...");
+        final long startTime = System.currentTimeMillis();
+        
+        outImg = inImg.factory().create(inImg);
         
         // compute the global maximum and minimum of the image
         
@@ -56,27 +59,24 @@ public class Normalize<T extends RealType<T>> extends AbstractOp {
         // normalize the image
         // I_N(i,j) = (I(i,j) - gmin) * (max-min)/(gmax-gmin) + min
         
-        final T diff = max.copy();
-        diff.sub(min);
-        
         final T gdiff = gmax.copy();
         gdiff.sub(gmin);
     
-        Cursor<T> cIn = inImg.cursor();
-        Cursor<T> cOut = outImg.cursor();
+        final Cursor<T> cIn = inImg.cursor();
+        final Cursor<T> cOut = outImg.cursor();
         
         while (cIn.hasNext()) {
             cIn.fwd();
             cOut.fwd();
             cOut.get().set(cIn.get());
             cOut.get().sub(gmin);
-            cOut.get().mul(diff);
+            cOut.get().mul((T) new DoubleType(max - min));
             cOut.get().div(gdiff);
-            cOut.get().add(min);
+            cOut.get().add((T) new DoubleType(min));
         }
     
-        long endTime = System.currentTimeMillis();
-        long fd = endTime - startTime;
-        log.info("Normalization: " + fd / 1000.0 + "s.");
+        final long endTime = System.currentTimeMillis();
+        final long fd = endTime - startTime;
+        log.info("--- time: " + fd / 1000.0 + "s.");
     }
 }

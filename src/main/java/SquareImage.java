@@ -22,23 +22,29 @@ public class SquareImage<T extends RealType<T>> extends AbstractOp {
     
     @Override
     public void run() {
-        long startTime = System.currentTimeMillis();
-        @SuppressWarnings("unchecked")
-        final Img<T> newImg = inImg.factory().create(inImg);
-        outImg = newImg;
     
-        Cursor<T> cIn = inImg.cursor();
-        Cursor<T> cOut = outImg.cursor();
+        log.info("Square Image...");
+        final long startTime = System.currentTimeMillis();
+        
+        outImg = inImg.factory().create(inImg);
+        
+        /* creating outImg from inImg's factory
+         * asserts that they have identical
+         * cursor traversal ordering */
+        
+        final Cursor<T> cIn = inImg.cursor();
+        final Cursor<T> cOut = outImg.cursor();
         
         while (cIn.hasNext()) {
             cIn.fwd();
             cOut.fwd();
-            T srcVal = cIn.get();
+            final T srcVal = cIn.get();
             cOut.get().set(srcVal);
             cOut.get().mul(srcVal);
         }
-        long endTime = System.currentTimeMillis();
-        long fd = endTime - startTime;
-        log.info("Square Image: " + fd / 1000.0 + "s.");
+        
+        final long endTime = System.currentTimeMillis();
+        final long fd = endTime - startTime;
+        log.info("--- time: " + fd / 1000.0 + "s.");
     }
 }

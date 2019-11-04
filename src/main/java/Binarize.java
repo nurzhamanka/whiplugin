@@ -35,35 +35,39 @@ public class Binarize extends AbstractOp {
 
     @Override
     public void run() {
-        long startTime = System.currentTimeMillis();
-        // compute the threshold
-        final DoubleType threshold = ops.stats().mean(inImg);
-//        final DoubleType imgStdev = ops.stats().stdDev(inImg);
-//        final DoubleType imgMedian = ops.stats().median(inImg);
-        threshold.div(new DoubleType(Math.PI)); // empirically optimal threshold for ORCA
         
-        final Img<BitType> preOutImg = (Img<BitType>) ops.threshold().apply(inImg, threshold);
-        outImg = preOutImg.factory().create(preOutImg);
-        ops.image().invert(outImg, preOutImg);
-        log.info("--- Filling holes...");
+        log.info("Binarization...");
+        final long startTime = System.currentTimeMillis();
+    
+        log.info("--- computing the threshold");
+        
+        // final DoubleType threshold = ops.stats().mean(inImg);
+        // final DoubleType imgStdev = ops.stats().stdDev(inImg);
+        // final DoubleType imgMedian = ops.stats().median(inImg);
+        // threshold.div(new DoubleType(Math.PI)); // empirically optimal threshold for ORCA
+    
+        log.info("--- applying IsoData threshold");
+        outImg = (Img<BitType>) ops.threshold().isoData(inImg);
+    
+        log.info("--- filling holes...");
         outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
-        log.info("--- Holes filled.");
+        
         List<Shape> disk1 = StructuringElements.disk(1, 2);
         List<Shape> disk3 = StructuringElements.disk(3, 2);
-        List<Shape> rectangles = StructuringElements.rectangle(new int[]{2,2});
+        List<Shape> rectangle = StructuringElements.rectangle(new int[]{2,2});
     
-        log.info("--- Closing...");
-        outImg = Closing.close(outImg, rectangles, 4);
-        log.info("--- Dilating...");
+        log.info("--- closing...");
+        outImg = Closing.close(outImg, rectangle, 4);
+        log.info("--- dilating...");
         outImg = Dilation.dilate(outImg, disk1, 4);
-        log.info("--- Closing...");
+        log.info("--- closing...");
         outImg = Closing.close(outImg, disk1, 4);
-        log.info("--- Eroding...");
+        log.info("--- eroding...");
         outImg = Erosion.erode(outImg, disk3, 4);
     
         long endTime = System.currentTimeMillis();
         long fd = endTime - startTime;
-        log.info("Binarize: " + fd / 1000.0 + "s.");
+        log.info("--- time: " + fd / 1000.0 + "s.");
     }
     
 }

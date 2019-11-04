@@ -1,6 +1,5 @@
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
-import net.imagej.ops.OpService;
 import net.imglib2.algorithm.morphology.StructuringElements;
 import net.imglib2.algorithm.morphology.TopHat;
 import net.imglib2.algorithm.neighborhood.Shape;
@@ -24,23 +23,23 @@ public class TophatImage<T extends RealType<T>> extends AbstractOp {
 
     @Parameter
     private LogService log;
-    
-    @Parameter
-    private OpService ops;
 
     @Override
     public void run() {
-        long startTime = System.currentTimeMillis();
-        List<Shape> disk = Helper.getDisk(13);
-        outImg = TopHat.topHat(inImg, disk, 4);
-//        ops.morphology().topHat(outImg, inImg, disk);
-        long endTime = System.currentTimeMillis();
-        long fd = endTime - startTime;
-        log.info("Top Hat: " + fd / 1000.0 + "s.");
+        
+        log.info("Top Hat Transform...");
+        final long startTime = System.currentTimeMillis();
+        
+        final List<Shape> disk = Helper.getDisk(3);
+        outImg = TopHat.topHat(inImg, StructuringElements.square(13, 2), 4);
+
+        final long endTime = System.currentTimeMillis();
+        final long fd = endTime - startTime;
+        log.info("--- time: " + fd / 1000.0 + "s.");
     }
     
     private static class Helper {
-        static List<Shape> disk;
+        private static List<Shape> disk;
         static List<Shape> getDisk(long radius) {
             if (disk != null) return disk;
             disk = StructuringElements.disk(radius, 2);

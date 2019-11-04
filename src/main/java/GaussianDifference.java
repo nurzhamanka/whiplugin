@@ -37,14 +37,15 @@ public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
 
     @Override
     public void run() {
+    
+        log.info("DoG, sigma1 = " + sigma1 + ", sigma2 = " + sigma2 + "...");
+        final long startTime = System.currentTimeMillis();
         
-        long startTime = System.currentTimeMillis();
-        
-        double[] sigmas1 = new double[]{sigma1, sigma1};
-        double[] sigmas2 = new double[]{sigma2, sigma2};
+        final double[] sigmas1 = new double[]{sigma1, sigma1};
+        final double[] sigmas2 = new double[]{sigma2, sigma2};
     
         final Img<T> in1 = inImg.copy();
-        RandomAccessible<T> inf1 = Views.extendValue(in1, (T) new DoubleType());
+        final RandomAccessible<T> inf1 = Views.extendValue(in1, (T) new DoubleType());
         Gauss3.gauss(sigmas1, inf1, in1);
         
         final Img<T> in2 = inImg.copy();
@@ -53,8 +54,8 @@ public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
     
         outImg = (Img<T>) ops.math().subtract(in1, (RandomAccessibleInterval) in2);
     
-        long endTime = System.currentTimeMillis();
-        long fd = endTime - startTime;
-        log.info("Difference of Gaussians: " + fd / 1000.0 + "s.");
+        final long endTime = System.currentTimeMillis();
+        final long fd = endTime - startTime;
+        log.info("--- time: " + fd / 1000.0 + "s.");
     }
 }

@@ -106,42 +106,50 @@ public class WoundHealing implements Command {
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
         
-        log.info("Image type is " + image.getClass());
-        
         // convert to a DoubleType Img
         Img<DoubleType> img = ops.convert().float64(image);
         
         // normalize to [0, 1]
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
     
         // square each pixel
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-    
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+
         // difference of Gaussians
         img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2.0, 1.0);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-        
-        // entropy filter
-        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-    
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+
         // TopHat morphology filtering
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+        // local entropy filtering
+        img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+        // square each pixel
+        img = (Img<DoubleType>) ops.run(SquareImage.class, img);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+//        // hybrid filter
+//        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
+//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         
+        // median filter
+        img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+
         // average filter
-        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 20);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-        
+        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 3);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+//
         // get the binary mask
         final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
 
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
-        final Img<T> fImg = (Img<T>) ops.convert().uint8(img);
-        
-        return fImg;
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 255.0);
+        return (Img<T>) ops.convert().uint8(img);
     }
     
     /*
@@ -154,7 +162,6 @@ public class WoundHealing implements Command {
         
         final ImageJ ij = new ImageJ();
         ij.launch(args);
-        
         ij.command().run(WoundHealing.class, true);
     }
 }
