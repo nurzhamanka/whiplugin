@@ -3,15 +3,19 @@ import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 
 import java.io.File;
@@ -26,13 +30,22 @@ public class WoundHealing implements Command {
     
     @Parameter
     private DatasetIOService datasetIOService;
-    
+
+    @Parameter
+    private ImageDisplayService imageDisplayService;
+
+    @Parameter
+    private UIService uiService;
+
     @Parameter
     private OpService ops;
     
     @Parameter
     private LogService log;
-    
+
+//    @Parameter(type = ItemIO.INPUT)
+//    private ImageDisplay displayIn;
+
     // -- Inputs to the command --
     
     /** Location on disk of the input images. */
@@ -44,39 +57,48 @@ public class WoundHealing implements Command {
     private File outputDir;
     
     public void run() {
-        try {
-            if (inputDir.isDirectory()) {
-                final File[] inputImages = inputDir.listFiles();
-                if (inputImages == null) {
-                    log.error("Input folder is empty");
-                } else {
-                    int total = inputImages.length;
-                    final List<Long> ts = new ArrayList<>();
-                    for (File image : inputImages) {
-                        long startTime = System.currentTimeMillis();
-                        if (image.getName().contains("DS_Store")) continue;
-                        log.info("Processing " + image.getName());
-                        // load the image
-                        final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
-                        
-                        // scale the image
-                        final Dataset result = process(currentImage);
-    
-                        // save the image
-                        datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
-                        long endTime = System.currentTimeMillis();
-                        long fd = endTime - startTime;
-                        log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
-                        ts.add(fd);
-                    }
-                    double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
 
-                    log.info( "Average time = " + average/1000.0 + "s.");
+        Dataset image2 = imageDisplayService.getActiveDataset();
+        log.info(image2.size());
+        if (image2 != null)
+        {
+            log.info("Processing " + image2.getName());
+            final Dataset result = process(image2);
+            uiService.show(result);
+        } else {
+            try {
+                if (inputDir.isDirectory()) {
+                    final File[] inputImages = inputDir.listFiles();
+                    if (inputImages == null) {
+                        log.error("Input folder is empty");
+                    } else {
+                        int total = inputImages.length;
+                        final List<Long> ts = new ArrayList<>();
+                        for (File image : inputImages) {
+                            long startTime = System.currentTimeMillis();
+                            if (image.getName().contains("DS_Store")) continue;
+                            log.info("Processing " + image.getName());
+                            // load the image
+                            final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
+
+                            // scale the image
+                            final Dataset result = process(currentImage);
+
+                            // save the image
+                            datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
+                            long endTime = System.currentTimeMillis();
+                            long fd = endTime - startTime;
+                            log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
+                            ts.add(fd);
+                        }
+                        double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
+
+                        log.info("Average time = " + average / 1000.0 + "s.");
+                    }
                 }
+            } catch (final IOException exc) {
+                log.error(exc);
             }
-        }
-        catch (final IOException exc) {
-            log.error(exc);
         }
     }
     
