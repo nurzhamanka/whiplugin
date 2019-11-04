@@ -1,16 +1,15 @@
+import fiji.util.gui.GenericDialogPlus;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
-import net.imagej.display.ImageDisplay;
 import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
-import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -47,26 +46,60 @@ public class WoundHealing implements Command {
 //    private ImageDisplay displayIn;
 
     // -- Inputs to the command --
-    
-    /** Location on disk of the input images. */
-    @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
-    private File inputDir;
-    
-    /** Location on disk to save the processed images. */
-    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
-    private File outputDir;
+
+
+//    @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
+//    private File inputDir;
+
+
+//    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
+//    private File outputDir;
     
     public void run() {
+        String inputFolder = "", outputFolder = "";
+        boolean activeImage = false;
+        GenericDialogPlus gd = new GenericDialogPlus("Wound Healing");
+        gd.addCheckbox("Use current active image?", activeImage);
 
-        Dataset image2 = imageDisplayService.getActiveDataset();
-        log.info(image2.size());
-        if (image2 != null)
+        gd.showDialog();
+        if (gd.wasCanceled()) {
+            return;
+        }
+        activeImage = gd.getNextBoolean();
+        if (!activeImage){
+            gd = new GenericDialogPlus("Wound Healing");
+            /** Location on disk of the input images. */
+            gd.addDirectoryField("Input directory", inputFolder);
+            /** Location on disk to save the processed images. */
+            gd.addDirectoryField("Output directory", outputFolder);
+            gd.showDialog();
+            if (gd.wasCanceled()) {
+                return;
+            }
+        }
+
+        inputFolder = gd.getNextString();
+        outputFolder = gd.getNextString();
+
+
+
+
+
+        if (activeImage)
         {
-            log.info("Processing " + image2.getName());
-            final Dataset result = process(image2);
-            uiService.show(result);
+            Dataset image2 = imageDisplayService.getActiveDataset();
+            if (image2 != null){
+                log.info("Processing " + image2.getName());
+                final Dataset result = process(image2);
+                uiService.show(result);
+            } else {
+                log.info("No image provided");
+            }
+
         } else {
             try {
+                File inputDir = new File(inputFolder);
+                File outputDir = new File(outputFolder);
                 if (inputDir.isDirectory()) {
                     final File[] inputImages = inputDir.listFiles();
                     if (inputImages == null) {
