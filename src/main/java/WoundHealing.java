@@ -1,9 +1,7 @@
 import io.scif.config.SCIFIOConfig;
 import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.DefaultDataset;
-import net.imagej.ImageJ;
-import net.imagej.ImgPlus;
+import net.imagej.*;
+import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.type.logic.BitType;
@@ -13,13 +11,11 @@ import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Plugin(type = Command.class, menuPath = "Wound Healing")
@@ -37,7 +33,10 @@ public class WoundHealing implements Command {
     private LogService log;
     
     @Parameter
-    private UIService ui;
+    private ImageDisplayService imgDisplayService;
+    
+    @Parameter
+    private DatasetService datasetService;
     
     // -- Inputs to the command --
     
@@ -50,6 +49,7 @@ public class WoundHealing implements Command {
     private File outputDir;
     
     
+    @SuppressWarnings("unchecked")
     public void run() {
         try {
             if (inputDir.isDirectory()) {
@@ -57,31 +57,23 @@ public class WoundHealing implements Command {
                 if (inputImages == null) {
                     log.error("Input folder is empty");
                 } else {
-                    int total = inputImages.length;
                     final List<Long> ts = new ArrayList<>();
-                    SCIFIOConfig config = new SCIFIOConfig();
-                    log.info("Config modes: " + Arrays.toString(config.imgOpenerGetImgModes()));
+                    final SCIFIOConfig config = new SCIFIOConfig();
                     config.imgOpenerSetImgModes(SCIFIOConfig.ImgMode.ARRAY);
                     for (File image : inputImages) {
-                        long startTime = System.currentTimeMillis();
+                        final long startTime = System.currentTimeMillis();
                         if (image.getName().contains("DS_Store")) continue;
                         log.info("Processing " + image.getName());
-                        // load the image
                         final Dataset currentImage = datasetIOService.open(image.getAbsolutePath(), config);
-//                        ui.show("Current Image :)", currentImage);
-                        
-                        // scale the image
                         final Dataset result = process(currentImage);
-//                        ui.show("Processed Image :)", result);
-    
-                        // save the image
                         datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
-                        long endTime = System.currentTimeMillis();
-                        long fd = endTime - startTime;
+                        final long endTime = System.currentTimeMillis();
+                        final long fd = endTime - startTime;
                         log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
                         ts.add(fd);
+                        break;
                     }
-                    double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
+                    final double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
 
                     log.info( "Average time = " + average/1000.0 + "s.");
                 }
@@ -124,6 +116,10 @@ public class WoundHealing implements Command {
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
     
+        // hybrid filter
+        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
         // local entropy filtering
         img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
@@ -131,10 +127,6 @@ public class WoundHealing implements Command {
         // square each pixel
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
-//        // hybrid filter
-//        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
-//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         
         // median filter
         img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
