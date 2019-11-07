@@ -66,8 +66,8 @@ public class HybridFilter extends AbstractOp {
                     ra.setPosition(pos);
                 }
                 outRa.setPosition(pos);
-                outRa.get().set(Math.max(Math.max(ras[0].get().get(), ras[1].get().get()),
-                        Math.max(ras[2].get().get(), ras[3].get().get())));
+                outRa.get().set(Math.min(Math.min(ras[0].get().get(), ras[1].get().get()),
+                        Math.min(ras[2].get().get(), ras[3].get().get())));
             }
         }
     

@@ -9,6 +9,8 @@ import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;
 import net.imglib2.algorithm.morphology.Closing;
+import net.imglib2.algorithm.morphology.Dilation;
+import net.imglib2.algorithm.morphology.Erosion;
 import net.imglib2.algorithm.morphology.StructuringElements;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.img.Img;
@@ -47,23 +49,24 @@ public class Binarize extends AbstractOp {
         final long startTime = System.currentTimeMillis();
         
         log.info("--- applying IsoData threshold");
-        outImg = (Img<BitType>) ops.threshold().isoData(inImg);
         
-        log.info("--- filling holes...");
-        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
+        outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().mean(inImg).getRealDouble() / Math.PI));
         
-        final List<Shape> strel1 = StructuringElements.square(1, 2);
-        final List<Shape> strel2 = StructuringElements.disk(1, 2);
-        final List<Shape> strel3 = StructuringElements.disk(2, 2);
+        outImg.forEach(BitType::not);
         
+//        log.info("--- filling holes...");
+//        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
+        
+        final List<Shape> strel1 = StructuringElements.disk(1, 2);
+        final List<Shape> strel2 = StructuringElements.disk(2, 2);
+        final List<Shape> strel3 = StructuringElements.disk(3, 2);
+        
+
         log.info("--- closing...");
         outImg = Closing.close(outImg, strel1, 4);
-//        log.info("--- dilating...");
-//        outImg = Dilation.dilate(outImg, strel2, 4);
-//        log.info("--- closing...");
-//        outImg = Closing.close(outImg, strel2, 4);
-//        log.info("--- eroding...");
-//        outImg = Erosion.erode(outImg, strel3, 4);
+        outImg = Dilation.dilate(outImg, strel1, 4);
+        outImg = Closing.close(outImg, strel1, 4);
+        outImg = Erosion.erode(outImg, strel2, 4);
 
 //        log.info("--- filling holes again...");
 //        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);

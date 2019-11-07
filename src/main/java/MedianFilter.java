@@ -74,7 +74,8 @@ public class MedianFilter extends AbstractOp {
                 i++;
             }
             Arrays.sort(vals);
-            outRa.get().set(vals[(kernelSize * kernelSize - 1) / 2]);
+            final double median = vals[(kernelSize * kernelSize - 1) / 2];
+            outRa.get().set(median);
         }
     
         final long endTime = System.currentTimeMillis();
