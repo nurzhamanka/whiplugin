@@ -48,19 +48,17 @@ public class Binarize extends AbstractOp {
         log.info("Binarization...");
         final long startTime = System.currentTimeMillis();
         
-        log.info("--- applying IsoData threshold");
+        log.info("--- applying threshold");
         
         outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().mean(inImg).getRealDouble() / Math.PI));
         
-        outImg.forEach(BitType::not);
-        
-//        log.info("--- filling holes...");
-//        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
-        
+        // log.info("--- filling holes...");
+        // outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
+
         final List<Shape> strel1 = StructuringElements.disk(1, 2);
         final List<Shape> strel2 = StructuringElements.disk(2, 2);
         final List<Shape> strel3 = StructuringElements.disk(3, 2);
-        
+
 
         log.info("--- closing...");
         outImg = Closing.close(outImg, strel1, 4);
@@ -68,9 +66,9 @@ public class Binarize extends AbstractOp {
         outImg = Closing.close(outImg, strel1, 4);
         outImg = Erosion.erode(outImg, strel2, 4);
 
-//        log.info("--- filling holes again...");
-//        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
-        
+        // log.info("--- filling holes again...");
+        // outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
+
         /* use a legacy ROI manager to retain the biggest area */
         final RoiManager roiManager = new RoiManager(true);
         final ResultsTable rt = new ResultsTable();
@@ -80,14 +78,14 @@ public class Binarize extends AbstractOp {
         //noinspection AccessStaticViaInstance
         particleAnalyzer.setRoiManager(roiManager);
         particleAnalyzer.setHideOutputImage(true);
+        
+        log.info("--- inverting image...");
+        outImg.forEach(p -> p.set(!p.get()));
 
-//        log.info("--- inverting image...");
-//        outImg.forEach(BitType::not);
-        
         final ImagePlus invImp = ImageJFunctions.wrapBit(outImg, "Binarized (Dirty)");
-        final ImageProcessor ip = invImp.getProcessor();
+        final ImageProcessor ip = invImp.getProcessor().convertToByteProcessor();
         assert (ip.isBinary());
-        
+
         if (particleAnalyzer.analyze(invImp, ip)) {
             log.info("--- negative particle detection successful");
             // separate the two largest regions (the monolayer) from the rest
@@ -120,12 +118,13 @@ public class Binarize extends AbstractOp {
                 ip.setRoi(rois[i]);
                 ip.setValue(255);
                 ip.fill();
+                ip.reset(ip.getMask());
             }
             log.info("--- negative artifacts fixed");
         } else {
             log.error("--- negative particle detection failed");
         }
-        
+
         rt.reset();
         roiManager.reset();
         ip.resetRoi();
@@ -150,6 +149,7 @@ public class Binarize extends AbstractOp {
                     ip.setRoi(rois[i]);
                     ip.setValue(255);
                     ip.fill();
+                    ip.reset(ip.getMask());
                 }
             }
             log.info("--- positive artifacts fixed");
@@ -159,12 +159,16 @@ public class Binarize extends AbstractOp {
         rt.reset();
         roiManager.reset();
         ip.resetRoi();
-        ip.invert();
+        
         final Img<UnsignedByteType> invImg = ImageJFunctions.wrap(new ImagePlus("Binarized (Clean)", ip));
         outImg = (Img<BitType>) ops.threshold().mean(invImg);
+    
+        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
 
-//        log.info("--- inverting image...");
-//        outImg.forEach(BitType::not);
+        log.info("--- inverting image...");
+        outImg.forEach(p -> p.set(!p.get()));
+    
+        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
         
         long endTime = System.currentTimeMillis();
         long fd = endTime - startTime;
