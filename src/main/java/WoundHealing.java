@@ -70,7 +70,8 @@ public class WoundHealing implements Command {
         boolean binarizationMask = false;
         boolean tiltCorrect = false;
         boolean savePlots = false;
-        String threshold = "";
+        int threshold = 0;
+        int dt = 0;
         activeImage = gd.getNextBoolean();
         if (!activeImage){
             gd = new GenericDialogPlus("Wound Healing");
@@ -80,21 +81,25 @@ public class WoundHealing implements Command {
             gd.addDirectoryField("Output directory", outputFolder);
             gd.addCheckbox("Segment out?", segmentOut);
             gd.addCheckbox("Binarization mask?", binarizationMask);
-            gd.addStringField("Threshold (0...1 float)", threshold);
+            gd.addNumericField("Threshold (0...1 float)", 0, threshold);
             gd.addCheckbox("Tilt correct?", tiltCorrect);
             gd.addCheckbox("Save Plots?", savePlots);
-            gd.addStringField("DT (0..100%)", threshold);
+            gd.addNumericField("DT (0..100%)", 0, dt);
             gd.showDialog();
             if (gd.wasCanceled()) {
                 return;
             }
+            inputFolder = gd.getNextString();
+            outputFolder = gd.getNextString();
+            segmentOut = gd.getNextBoolean();
+            binarizationMask = gd.getNextBoolean();
+            threshold = (int)gd.getNextNumber();
+            tiltCorrect = gd.getNextBoolean();
+            savePlots = gd.getNextBoolean();
+            dt = (int)gd.getNextNumber();
+
+
         }
-
-        inputFolder = gd.getNextString();
-        outputFolder = gd.getNextString();
-
-
-
 
 
         if (activeImage)
