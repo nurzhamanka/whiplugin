@@ -142,14 +142,14 @@ public class WoundHealing implements Command {
 //        img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
 //        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
 
-        // median filter for getting rid of white "veins"
-        img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
-        processStack.addSlice("7. Median Filter", makeSlice(img));
+//        // median filter for getting rid of white "veins"
+//        img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
+//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+//
+//        processStack.addSlice("7. Median Filter", makeSlice(img));
 
         // average filter
-        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 3);
+        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 9);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
     
         processStack.addSlice("8. Mean Smoothing", makeSlice(img));
@@ -162,12 +162,12 @@ public class WoundHealing implements Command {
     
         final ImagePlus processImage = new ImagePlus("Process", processStack);
         processImage.getProcessor().convertToByte(true);
-        processImage.show();
         final ContrastEnhancer ch = new ContrastEnhancer();
-        ch.setProcessStack(true);
-        ch.setUseStackHistogram(true);
-        ch.equalize(processImage);
-        processImage.updateAndDraw();
+        for (int i = 1; i <= processImage.getStack().getSize(); i++) {
+            final ImageProcessor ip = processImage.getStack().getProcessor(i);
+            ch.equalize(ip);
+        }
+        processImage.show();
 
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0, 255);
         return (Img<T>) ops.convert().uint8(img);
