@@ -60,6 +60,10 @@
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
+        <repository>
+            <id>bt-flowtick-jgraphx</id>
+            <url>https://dl.bintray.com/flowtick/jgraphx/</url>
+        </repository>
     </repositories>
 
     <dependencies>

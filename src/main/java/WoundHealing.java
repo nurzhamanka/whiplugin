@@ -17,6 +17,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +66,11 @@ public class WoundHealing implements Command {
         if (gd.wasCanceled()) {
             return;
         }
+        boolean segmentOut = false;
+        boolean binarizationMask = false;
+        boolean tiltCorrect = false;
+        boolean savePlots = false;
+        String threshold = "";
         activeImage = gd.getNextBoolean();
         if (!activeImage){
             gd = new GenericDialogPlus("Wound Healing");
@@ -72,6 +78,12 @@ public class WoundHealing implements Command {
             gd.addDirectoryField("Input directory", inputFolder);
             /** Location on disk to save the processed images. */
             gd.addDirectoryField("Output directory", outputFolder);
+            gd.addCheckbox("Segment out?", segmentOut);
+            gd.addCheckbox("Binarization mask?", binarizationMask);
+            gd.addStringField("Threshold (0...1 float)", threshold);
+            gd.addCheckbox("Tilt correct?", tiltCorrect);
+            gd.addCheckbox("Save Plots?", savePlots);
+            gd.addStringField("DT (0..100%)", threshold);
             gd.showDialog();
             if (gd.wasCanceled()) {
                 return;
@@ -94,6 +106,7 @@ public class WoundHealing implements Command {
                 uiService.show(result);
             } else {
                 log.info("No image provided");
+                // cancel
             }
 
         } else {
