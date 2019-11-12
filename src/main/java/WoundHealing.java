@@ -1,3 +1,12 @@
+
+import fiji.util.gui.GenericDialogPlus;
+import io.scif.services.DatasetIOService;
+import net.imagej.Dataset;
+import net.imagej.DefaultDataset;
+import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
+import net.imagej.display.ImageDisplayService;
+
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.ContrastEnhancer;
@@ -5,6 +14,7 @@ import ij.process.ImageProcessor;
 import io.scif.config.SCIFIOConfig;
 import io.scif.services.DatasetIOService;
 import net.imagej.*;
+
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -17,8 +27,10 @@ import org.scijava.log.LogLevel;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
 import org.scijava.widget.FileWidget;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,64 +43,130 @@ public class WoundHealing implements Command {
     
     @Parameter
     private DatasetIOService datasetIOService;
-    
+
+    @Parameter
+    private ImageDisplayService imageDisplayService;
+
+    @Parameter
+    private UIService uiService;
+
     @Parameter
     private OpService ops;
     
     @Parameter
     private LogService log;
-    
-    @Parameter
-    private DisplayService displayService;
-    
-    @Parameter
-    private DatasetService datasetService;
-    
+
+//    @Parameter(type = ItemIO.INPUT)
+//    private ImageDisplay displayIn;
+
     // -- Inputs to the command --
-    
-    /** Location on disk of the input images. */
-    @Parameter(label = "Input Folder", description = "Path to the root dataset folder", style = FileWidget.DIRECTORY_STYLE)
-    private File inputDir;
-    
-    /** Location on disk to save the processed images. */
-    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
-    private File outputDir;
+
+
+//    @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
+//    private File inputDir;
+
+
+//    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
+//    private File outputDir;
     
     
     @SuppressWarnings("unchecked")
     public void run() {
-        try {
-            log.setLevel(LogLevel.INFO);
-            if (inputDir.isDirectory()) {
-                final File[] inputImages = inputDir.listFiles();
-                if (inputImages == null) {
-                    log.error("Input folder is empty");
-                } else {
-                    final List<Long> ts = new ArrayList<>();
-                    final SCIFIOConfig config = new SCIFIOConfig();
-                    config.imgOpenerSetImgModes(SCIFIOConfig.ImgMode.ARRAY);
-                    for (File image : inputImages) {
-                        final long startTime = System.currentTimeMillis();
-                        if (image.getName().contains("DS_Store")) continue;
-                        log.info("Processing " + image.getName());
-                        final Dataset currentImage = datasetIOService.open(image.getAbsolutePath(), config);
-                        final Dataset result = process(currentImage);
-                        datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
-                        final long endTime = System.currentTimeMillis();
-                        final long fd = endTime - startTime;
-                        log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
-                        ts.add(fd);
-                        break;
-                    }
-                    final double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
 
-                    log.info( "Average time = " + average/1000.0 + "s.");
-                    System.out.println("FINISHED.");
-                }
-            }
+        String inputFolder = "", outputFolder = "";
+        boolean activeImage = false;
+        GenericDialogPlus gd = new GenericDialogPlus("Wound Healing");
+        gd.addCheckbox("Use current active image?", activeImage);
+
+        gd.showDialog();
+        if (gd.wasCanceled()) {
+            return;
         }
-        catch (final IOException exc) {
-            log.error(exc);
+        boolean segmentOut = false;
+        boolean binarizationMask = false;
+        boolean tiltCorrect = false;
+        boolean savePlots = false;
+        int threshold = 0;
+        int dt = 0;
+        activeImage = gd.getNextBoolean();
+        if (!activeImage){
+            gd = new GenericDialogPlus("Wound Healing");
+            /** Location on disk of the input images. */
+            gd.addDirectoryField("Input directory", inputFolder);
+            /** Location on disk to save the processed images. */
+            gd.addDirectoryField("Output directory", outputFolder);
+            gd.addCheckbox("Segment out?", segmentOut);
+            gd.addCheckbox("Binarization mask?", binarizationMask);
+            gd.addNumericField("Threshold (0...1 float)", 0, threshold);
+            gd.addCheckbox("Tilt correct?", tiltCorrect);
+            gd.addCheckbox("Save Plots?", savePlots);
+            gd.addNumericField("DT (0..100%)", 0, dt);
+            gd.showDialog();
+            if (gd.wasCanceled()) {
+                return;
+              
+            }
+            inputFolder = gd.getNextString();
+            outputFolder = gd.getNextString();
+            segmentOut = gd.getNextBoolean();
+            binarizationMask = gd.getNextBoolean();
+            threshold = (int)gd.getNextNumber();
+            tiltCorrect = gd.getNextBoolean();
+            savePlots = gd.getNextBoolean();
+            dt = (int)gd.getNextNumber();
+
+
+        }
+
+
+        if (activeImage)
+        {
+            Dataset image2 = imageDisplayService.getActiveDataset();
+            if (image2 != null){
+                log.info("Processing " + image2.getName());
+                final Dataset result = process(image2);
+                uiService.show(result);
+            } else {
+                log.info("No image provided");
+                // cancel
+            }
+
+        } else {
+            try {
+                File inputDir = new File(inputFolder);
+                File outputDir = new File(outputFolder);
+                if (inputDir.isDirectory()) {
+                    final File[] inputImages = inputDir.listFiles();
+                    if (inputImages == null) {
+                        log.error("Input folder is empty");
+                    } else {
+                        int total = inputImages.length;
+                        final List<Long> ts = new ArrayList<>();
+                        for (File image : inputImages) {
+                            long startTime = System.currentTimeMillis();
+                            if (image.getName().contains("DS_Store")) continue;
+                            log.info("Processing " + image.getName());
+                            // load the image
+                            final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
+
+                            // scale the image
+                            final Dataset result = process(currentImage);
+
+                            // save the image
+                            datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
+                            long endTime = System.currentTimeMillis();
+                            long fd = endTime - startTime;
+                            log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
+                            ts.add(fd);
+                        }
+                        double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
+
+                        log.info("Average time = " + average / 1000.0 + "s.");
+                    }
+                }
+            } catch (final IOException exc) {
+                log.error(exc);
+            }
         }
     }
     
