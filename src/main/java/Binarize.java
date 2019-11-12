@@ -131,15 +131,12 @@ public class Binarize extends AbstractOp {
         } else {
             log.error("--- wound particle detection failed");
         }
-        new ImagePlus("1 WOUND PARTICLES FIXED, inv", ip).show();
-        ip.erode(4, 0);
+        
         // now the wound should be completely white
         ip.resetRoi();
         ip.invert();
         roiManager.reset();
         rt.reset();
-    
-        new ImagePlus("2 WOUND PARTICLES FIXED", ip).show();
     
         final ParticleAnalyzer particleAnalyzer2 = new ParticleAnalyzer(
                 ParticleAnalyzer.ADD_TO_MANAGER,

@@ -1,20 +1,14 @@
-
 import fiji.util.gui.GenericDialogPlus;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.plugin.ContrastEnhancer;
+import ij.process.ImageProcessor;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.display.ImageDisplayService;
-
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.plugin.ContrastEnhancer;
-import ij.process.ImageProcessor;
-import io.scif.config.SCIFIOConfig;
-import io.scif.services.DatasetIOService;
-import net.imagej.*;
-
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -22,151 +16,152 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
-import org.scijava.display.DisplayService;
-import org.scijava.log.LogLevel;
+import org.scijava.command.InteractiveCommand;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
-import org.scijava.widget.FileWidget;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Plugin(type = Command.class, menuPath = "Wound Healing")
-public class WoundHealing implements Command {
+public class WoundHealing extends InteractiveCommand {
     
-    // -- Needed services --
+    private final String PLUGIN_NAME = "Wound Healing Plugin";
+    private final String USER_DIR = System.getProperty("user.home");
     
+    /** SERVICES */
     @Parameter
     private DatasetIOService datasetIOService;
-
     @Parameter
     private ImageDisplayService imageDisplayService;
-
     @Parameter
     private UIService uiService;
-
     @Parameter
     private OpService ops;
-    
     @Parameter
     private LogService log;
-
-//    @Parameter(type = ItemIO.INPUT)
-//    private ImageDisplay displayIn;
-
-    // -- Inputs to the command --
-
-
-//    @Parameter(label = "Input Folder", style = FileWidget.DIRECTORY_STYLE)
-//    private File inputDir;
-
-
-//    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
-//    private File outputDir;
     
+    /** PARAMETERS */
+    private Dataset openImg;
+    private File inputDir, outputDir;
+    private boolean isSaveBinMask;
+    private boolean isSaveOutline;
+    private boolean isDoTiltCorrect;
+    private boolean isSavePlots;
+    private int threshold;
     
     @SuppressWarnings("unchecked")
     public void run() {
-
-        String inputFolder = "", outputFolder = "";
-        boolean activeImage = false;
-        GenericDialogPlus gd = new GenericDialogPlus("Wound Healing");
-        gd.addCheckbox("Use current active image?", activeImage);
-
+    
+        openImg = imageDisplayService.getActiveDataset();
+        if (openImg != null) {
+            final GenericDialogPlus gd = new GenericDialogPlus(PLUGIN_NAME);
+            gd.addMessage("Process the active dataset?");
+            gd.addHelp("https://github.com/nurzhamanka/whi-plugin");
+            gd.showDialog();
+            if (gd.wasOKed()) {
+                populateParams(false);
+                if (isCanceled()) return;
+                processActiveDataset();
+                return;
+            }
+        }
+        populateParams(true);
+        if (isCanceled()) return;
+        processDirectory();
+    }
+    
+    
+    private void populateParams(final boolean hasDirectory) {
+        final GenericDialogPlus gd = new GenericDialogPlus(PLUGIN_NAME);
+        gd.addMessage("Process the active dataset?");
+        if (hasDirectory) {
+            gd.addDirectoryField("Input root path", USER_DIR);
+            gd.addDirectoryField("Output root path", USER_DIR);
+        }
+        gd.addCheckbox("Save binary masks", true);
+        gd.addCheckbox("Save outline", false);
+        gd.addSlider("Threshold", 0, 255, 100, 1);
+        gd.addCheckbox("Tilt correction", false);
+        gd.addCheckbox("Save plots", false);
+        gd.addHelp("https://github.com/nurzhamanka/whi-plugin");
         gd.showDialog();
-        if (gd.wasCanceled()) {
+        if (gd.wasOKed()) {
+            // populate parameters
+            inputDir = new File(gd.getNextString());
+            outputDir = new File(gd.getNextString());
+            if (!inputDir.isDirectory() || !outputDir.isDirectory()) {
+                final GenericDialogPlus errorDialog = new GenericDialogPlus("Error");
+                errorDialog.addMessage("Input and output paths must be directories!");
+                errorDialog.hideCancelButton();
+                errorDialog.showDialog();
+                cancel("Input and output paths must be directories");
+            }
+            isSaveBinMask = gd.getNextBoolean();
+            isSaveOutline = gd.getNextBoolean();
+            threshold = (int) gd.getNextNumber();
+            isDoTiltCorrect = gd.getNextBoolean();
+            isSavePlots = gd.getNextBoolean();
+        }
+        if (gd.wasCanceled()) cancel("Plugin canceled by user");
+    }
+    
+    private void processActiveDataset() {
+        // process the active dataset
+        return;
+    }
+    
+    private void processDirectory() {
+        
+        assert inputDir.isDirectory();
+        final File[] sets = inputDir.listFiles(File::isDirectory);
+        assert sets != null;
+        if (sets.length == 0) {
+            cancel("The dataset is empty");
             return;
         }
-        boolean segmentOut = false;
-        boolean binarizationMask = false;
-        boolean tiltCorrect = false;
-        boolean savePlots = false;
-        int threshold = 0;
-        int dt = 0;
-        activeImage = gd.getNextBoolean();
-        if (!activeImage){
-            gd = new GenericDialogPlus("Wound Healing");
-            /** Location on disk of the input images. */
-            gd.addDirectoryField("Input directory", inputFolder);
-            /** Location on disk to save the processed images. */
-            gd.addDirectoryField("Output directory", outputFolder);
-            gd.addCheckbox("Segment out?", segmentOut);
-            gd.addCheckbox("Binarization mask?", binarizationMask);
-            gd.addNumericField("Threshold (0...1 float)", 0, threshold);
-            gd.addCheckbox("Tilt correct?", tiltCorrect);
-            gd.addCheckbox("Save Plots?", savePlots);
-            gd.addNumericField("DT (0..100%)", 0, dt);
-            gd.showDialog();
-            if (gd.wasCanceled()) {
-                return;
-              
-            }
-            inputFolder = gd.getNextString();
-            outputFolder = gd.getNextString();
-            segmentOut = gd.getNextBoolean();
-            binarizationMask = gd.getNextBoolean();
-            threshold = (int)gd.getNextNumber();
-            tiltCorrect = gd.getNextBoolean();
-            savePlots = gd.getNextBoolean();
-            dt = (int)gd.getNextNumber();
-
-
-        }
-
-
-        if (activeImage)
-        {
-            Dataset image2 = imageDisplayService.getActiveDataset();
-            if (image2 != null){
-                log.info("Processing " + image2.getName());
-                final Dataset result = process(image2);
-                uiService.show(result);
-            } else {
-                log.info("No image provided");
-                // cancel
-            }
-
-        } else {
-            try {
-                File inputDir = new File(inputFolder);
-                File outputDir = new File(outputFolder);
-                if (inputDir.isDirectory()) {
-                    final File[] inputImages = inputDir.listFiles();
-                    if (inputImages == null) {
-                        log.error("Input folder is empty");
-                    } else {
-                        int total = inputImages.length;
-                        final List<Long> ts = new ArrayList<>();
-                        for (File image : inputImages) {
-                            long startTime = System.currentTimeMillis();
-                            if (image.getName().contains("DS_Store")) continue;
-                            log.info("Processing " + image.getName());
-                            // load the image
-                            final Dataset currentImage = datasetIOService.open(image.getAbsolutePath());
-
-                            // scale the image
-                            final Dataset result = process(currentImage);
-
-                            // save the image
-                            datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
-                            long endTime = System.currentTimeMillis();
-                            long fd = endTime - startTime;
-                            log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
-                            ts.add(fd);
-                        }
-                        double average = ts.stream().mapToDouble(val -> val).average().orElse(0.0);
-
-                        log.info("Average time = " + average / 1000.0 + "s.");
-                    }
+        
+        for (final File set : sets) {
+            assert set.isDirectory();
+            final File[] inputImages = set.listFiles(f -> datasetIOService.canOpen(f.getAbsolutePath()));
+            assert inputImages != null;
+            if (inputImages.length == 0) continue;  // this particular dataset is empty, move on
+            final List<Long> times = new ArrayList<>();  // primitive benchmarking
+            for (final File image : inputImages) {
+                final long startTime = System.currentTimeMillis();
+                log.info("Processing " + image.getName());
+                final String imgPath = image.getAbsolutePath();
+                final Dataset currentImage;
+                try {
+                    currentImage = datasetIOService.open(imgPath);
+                } catch (IOException e) {
+                    log.error(e);
+                    continue;
                 }
-            } catch (final IOException exc) {
-                log.error(exc);
+    
+                // process the image
+                final Dataset result = process(currentImage);
+        
+                // save the image
+                try {
+                    datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
+                } catch (IOException e) {
+                    log.error(e);
+                    continue;
+                }
+                final long endTime = System.currentTimeMillis();
+                final long fd = endTime - startTime;
+                log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
+                times.add(fd);
             }
+            double sum = times.stream().mapToDouble(val -> val).sum();
+            double average = times.stream().mapToDouble(val -> val).average().orElse(0.0);
+            log.info("Dataset processed in " + sum / 1000.0 + "s.");
+            log.info("Average time per image is " + average / 1000.0 + "s.");
         }
     }
     
@@ -181,7 +176,7 @@ public class WoundHealing implements Command {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
-    
+        
         final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
         
         // convert to a DoubleType Img
@@ -191,31 +186,31 @@ public class WoundHealing implements Command {
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         
         processStack.addSlice("1. Original Image", makeSlice(img));
-    
+        
         // square each pixel
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
+        
         processStack.addSlice("2. Squared Image", makeSlice(img));
-
+        
         // difference of Gaussians
         img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2, 1);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
+        
         processStack.addSlice("3. DoG", makeSlice(img));
-
+        
         // hybrid filter
         img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 9);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
+        
         processStack.addSlice("4. Hybrid Filter", makeSlice(img));
-
+        
         // TopHat morphology filtering
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
+        
         processStack.addSlice("5. Top Hat", makeSlice(img));
-    
+
 //        // local entropy filtering
 //        img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
 //        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
@@ -225,19 +220,19 @@ public class WoundHealing implements Command {
 //        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
 //
 //        processStack.addSlice("7. Median Filter", makeSlice(img));
-
+        
         // average filter
         img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 9);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-    
+        
         processStack.addSlice("8. Mean Smoothing", makeSlice(img));
-
+        
         // get the binary mask
         final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
-    
+        
         processStack.addSlice("9. Binary Mask", makeSlice(img));
-    
+        
         final ImagePlus processImage = new ImagePlus("Process", processStack);
         processImage.getProcessor().convertToByte(true);
         final ContrastEnhancer ch = new ContrastEnhancer();
@@ -246,14 +241,14 @@ public class WoundHealing implements Command {
             ch.equalize(ip);
         }
         processImage.show();
-
+        
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0, 255);
         return (Img<T>) ops.convert().uint8(img);
     }
     
     @SuppressWarnings("unchecked")
     private ImageProcessor makeSlice(Img img) {
-        final ImageProcessor ip = ImageJFunctions.wrapBit(img, "").getProcessor();
+        final ImageProcessor ip = ImageJFunctions.wrap(img, "").getProcessor();
         ip.convertToByte(true);
         return ip;
     }
