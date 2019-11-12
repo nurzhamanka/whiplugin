@@ -15,22 +15,22 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+import ops.*;
 import org.scijava.command.Command;
-import org.scijava.command.InteractiveCommand;
+import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.UIService;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = "Wound Healing")
-public class WoundHealing extends InteractiveCommand {
+@Plugin(type = Command.class, menuPath = "Plugins>Wound Healing Tool")
+public class WoundHealing extends DynamicCommand {
     
-    private final String PLUGIN_NAME = "Wound Healing Plugin";
+    private final String PLUGIN_NAME = "Wound Healing Tool 2";
     private final String USER_DIR = System.getProperty("user.home");
     
     /** SERVICES */
@@ -38,8 +38,6 @@ public class WoundHealing extends InteractiveCommand {
     private DatasetIOService datasetIOService;
     @Parameter
     private ImageDisplayService imageDisplayService;
-    @Parameter
-    private UIService uiService;
     @Parameter
     private OpService ops;
     @Parameter
@@ -56,63 +54,75 @@ public class WoundHealing extends InteractiveCommand {
     
     @SuppressWarnings("unchecked")
     public void run() {
-    
+        
         openImg = imageDisplayService.getActiveDataset();
         if (openImg != null) {
-            final GenericDialogPlus gd = new GenericDialogPlus(PLUGIN_NAME);
-            gd.addMessage("Process the active dataset?");
-            gd.addHelp("https://github.com/nurzhamanka/whi-plugin");
-            gd.showDialog();
-            if (gd.wasOKed()) {
+            final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
+            dialogActiveDataset.addMessage("Do you want to process the active dataset?");
+            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whi-plugin");
+            dialogActiveDataset.showDialog();
+            if (dialogActiveDataset.wasOKed()) {
                 populateParams(false);
                 if (isCanceled()) return;
                 processActiveDataset();
-                return;
+            } else {
+                final GenericDialogPlus dialogDirectory = new GenericDialogPlus(PLUGIN_NAME);
+                dialogDirectory.addMessage("Do you want to process a directory instead?");
+                dialogDirectory.addHelp("https://github.com/nurzhamanka/whi-plugin");
+                dialogDirectory.showDialog();
+                if (dialogDirectory.wasOKed()) {
+                    populateParams(true);
+                    if (isCanceled()) return;
+                    processDirectory();
+                } else {
+                    cancel("Plugin canceled by user");
+                }
             }
+        } else {
+            populateParams(true);
+            if (isCanceled()) return;
+            processDirectory();
         }
-        populateParams(true);
-        if (isCanceled()) return;
-        processDirectory();
     }
     
     
     private void populateParams(final boolean hasDirectory) {
-        final GenericDialogPlus gd = new GenericDialogPlus(PLUGIN_NAME);
-        gd.addMessage("Process the active dataset?");
+        final GenericDialogPlus dialogParams = new GenericDialogPlus(PLUGIN_NAME);
+        dialogParams.addMessage("Welcome to Wound Healing Tool 2. Please specify the parameters.");
         if (hasDirectory) {
-            gd.addDirectoryField("Input root path", USER_DIR);
-            gd.addDirectoryField("Output root path", USER_DIR);
+            dialogParams.addDirectoryField("Input root path", USER_DIR);
+            dialogParams.addDirectoryField("Output root path", USER_DIR);
         }
-        gd.addCheckbox("Save binary masks", true);
-        gd.addCheckbox("Save outline", false);
-        gd.addSlider("Threshold", 0, 255, 100, 1);
-        gd.addCheckbox("Tilt correction", false);
-        gd.addCheckbox("Save plots", false);
-        gd.addHelp("https://github.com/nurzhamanka/whi-plugin");
-        gd.showDialog();
-        if (gd.wasOKed()) {
+        dialogParams.addCheckbox("Save binary masks", true);
+        dialogParams.addCheckbox("Save outline", false);
+        dialogParams.addSlider("Threshold", 0, 255, 100, 1);
+        dialogParams.addCheckbox("Tilt correction", false);
+        dialogParams.addCheckbox("Save plots", false);
+        dialogParams.addHelp("https://github.com/nurzhamanka/whi-plugin");
+        dialogParams.showDialog();
+        if (dialogParams.wasOKed()) {
             // populate parameters
-            inputDir = new File(gd.getNextString());
-            outputDir = new File(gd.getNextString());
-            if (!inputDir.isDirectory() || !outputDir.isDirectory()) {
-                final GenericDialogPlus errorDialog = new GenericDialogPlus("Error");
-                errorDialog.addMessage("Input and output paths must be directories!");
-                errorDialog.hideCancelButton();
-                errorDialog.showDialog();
-                cancel("Input and output paths must be directories");
+            if (hasDirectory) {
+                inputDir = new File(dialogParams.getNextString());
+                outputDir = new File(dialogParams.getNextString());
+                if (!inputDir.isDirectory() || !outputDir.isDirectory()) {
+                    cancel("Input and output paths must be directories");
+                    return;
+                }
             }
-            isSaveBinMask = gd.getNextBoolean();
-            isSaveOutline = gd.getNextBoolean();
-            threshold = (int) gd.getNextNumber();
-            isDoTiltCorrect = gd.getNextBoolean();
-            isSavePlots = gd.getNextBoolean();
+            isSaveBinMask = dialogParams.getNextBoolean();
+            isSaveOutline = dialogParams.getNextBoolean();
+            threshold = (int) dialogParams.getNextNumber();
+            isDoTiltCorrect = dialogParams.getNextBoolean();
+            isSavePlots = dialogParams.getNextBoolean();
+        } else {
+            cancel("Plugin canceled by user");
         }
-        if (gd.wasCanceled()) cancel("Plugin canceled by user");
     }
     
     private void processActiveDataset() {
-        // process the active dataset
-        return;
+        // TODO: process the active dataset, produce a hyperstack
+        cancel("To be implemented...");
     }
     
     private void processDirectory() {
@@ -124,7 +134,7 @@ public class WoundHealing extends InteractiveCommand {
             cancel("The dataset is empty");
             return;
         }
-        
+        // TODO: save dataset in the same directory structure
         for (final File set : sets) {
             assert set.isDirectory();
             final File[] inputImages = set.listFiles(f -> datasetIOService.canOpen(f.getAbsolutePath()));
@@ -157,6 +167,7 @@ public class WoundHealing extends InteractiveCommand {
                 final long fd = endTime - startTime;
                 log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
                 times.add(fd);
+                return;
             }
             double sum = times.stream().mapToDouble(val -> val).sum();
             double average = times.stream().mapToDouble(val -> val).average().orElse(0.0);
@@ -176,6 +187,8 @@ public class WoundHealing extends InteractiveCommand {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
+        
+        // TODO: move all the stack forming into ProcessActiveDataset
         
         final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
         
@@ -212,17 +225,17 @@ public class WoundHealing extends InteractiveCommand {
         processStack.addSlice("5. Top Hat", makeSlice(img));
 
 //        // local entropy filtering
-//        img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
-//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+//        img = (Img<DoubleType>) ops.run(ops.LocalEntropyFilter.class, img, 3);
+//        img = (Img<DoubleType>) ops.run(ops.Normalize.class, img, 0.0, 1.0);
 
 //        // median filter for getting rid of white "veins"
-//        img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
-//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+//        img = (Img<DoubleType>) ops.run(ops.MedianFilter.class, img, 3);
+//        img = (Img<DoubleType>) ops.run(ops.Normalize.class, img, 0.0, 1.0);
 //
 //        processStack.addSlice("7. Median Filter", makeSlice(img));
         
         // average filter
-        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 9);
+        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 19);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         
         processStack.addSlice("8. Mean Smoothing", makeSlice(img));

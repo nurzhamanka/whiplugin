@@ -1,3 +1,5 @@
+package ops;
+
 import ij.ImagePlus;
 import ij.plugin.filter.RankFilters;
 import ij.process.ImageProcessor;

@@ -1,3 +1,5 @@
+package ops;
+
 import net.imagej.ops.AbstractOp;
 import net.imagej.ops.Op;
 import net.imagej.ops.OpService;

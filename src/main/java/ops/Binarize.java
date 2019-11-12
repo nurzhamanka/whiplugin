@@ -1,3 +1,5 @@
+package ops;
+
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -173,6 +175,7 @@ public class Binarize extends AbstractOp {
         
         final Img<UnsignedByteType> invImg = ImageJFunctions.wrap(new ImagePlus("Binarized (Clean)", ip2));
         outImg = ops.convert().bit(invImg);
+        outImg = Dilation.dilate(outImg, strel3, 4);
         
         long endTime = System.currentTimeMillis();
         long fd = endTime - startTime;
