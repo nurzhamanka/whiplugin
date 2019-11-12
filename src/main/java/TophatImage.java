@@ -26,7 +26,24 @@ public class TophatImage<T extends RealType<T>> extends AbstractOp {
 
     @Override
     public void run() {
-        List<Shape> disks = StructuringElements.disk(13, 2, 4);
-        outImg = TopHat.topHat(inImg, disks, 4);
+        
+        log.info("Top Hat Transform...");
+        final long startTime = System.currentTimeMillis();
+        
+        final List<Shape> strel = Helper.getStrel(6);
+        outImg = TopHat.topHat(inImg, strel, 4);
+
+        final long endTime = System.currentTimeMillis();
+        final long fd = endTime - startTime;
+        log.info("--- time: " + fd / 1000.0 + "s.");
+    }
+    
+    private static class Helper {
+        private static List<Shape> strel;
+        static List<Shape> getStrel(int radius) {
+            if (strel != null) return strel;
+            strel = StructuringElements.disk(radius, 2);
+            return strel;
+        }
     }
 }

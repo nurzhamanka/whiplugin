@@ -1,3 +1,4 @@
+
 import fiji.util.gui.GenericDialogPlus;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
@@ -5,12 +6,24 @@ import net.imagej.DefaultDataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.display.ImageDisplayService;
+
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.plugin.ContrastEnhancer;
+import ij.process.ImageProcessor;
+import io.scif.config.SCIFIOConfig;
+import io.scif.services.DatasetIOService;
+import net.imagej.*;
+
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import org.scijava.command.Command;
+import org.scijava.display.DisplayService;
+import org.scijava.log.LogLevel;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -56,7 +69,10 @@ public class WoundHealing implements Command {
 //    @Parameter(label = "Output Folder", style = FileWidget.DIRECTORY_STYLE)
 //    private File outputDir;
     
+    
+    @SuppressWarnings("unchecked")
     public void run() {
+
         String inputFolder = "", outputFolder = "";
         boolean activeImage = false;
         GenericDialogPlus gd = new GenericDialogPlus("Wound Healing");
@@ -88,6 +104,7 @@ public class WoundHealing implements Command {
             gd.showDialog();
             if (gd.wasCanceled()) {
                 return;
+              
             }
             inputFolder = gd.getNextString();
             outputFolder = gd.getNextString();
@@ -153,12 +170,10 @@ public class WoundHealing implements Command {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private Dataset process(final Dataset dataset) {
-        // NB: We must do a raw cast through Img, because Dataset does not
-        // retain the recursive type parameter; it has an ImgPlus<RealType<?>>.
-        // This is invalid for routines that need Img<T extends RealType<T>>.
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        final Img<RealType<?>> result = process((Img) dataset.getImgPlus());
+        
+        final Img<RealType<?>> result = process((Img) dataset.getImgPlus().getImg());
         
         // Finally, coerce the result back to an ImageJ Dataset object.
         return new DefaultDataset(dataset.context(), new ImgPlus<>(result));
@@ -166,41 +181,81 @@ public class WoundHealing implements Command {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
+    
+        final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
         
         // convert to a DoubleType Img
         Img<DoubleType> img = ops.convert().float64(image);
         
         // normalize to [0, 1]
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+        
+        processStack.addSlice("1. Original Image", makeSlice(img));
     
         // square each pixel
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
     
-        // difference of Gaussians TODO
-        img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2.0, 1.0);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-        
-        // entropy filter
-        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 5);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
+        processStack.addSlice("2. Squared Image", makeSlice(img));
+
+        // difference of Gaussians
+        img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2, 1);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
     
+        processStack.addSlice("3. DoG", makeSlice(img));
+
+        // hybrid filter
+        img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 9);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+        processStack.addSlice("4. Hybrid Filter", makeSlice(img));
+
         // TopHat morphology filtering
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-        
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+        processStack.addSlice("5. Top Hat", makeSlice(img));
+    
+//        // local entropy filtering
+//        img = (Img<DoubleType>) ops.run(LocalEntropyFilter.class, img, 3);
+//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+
+//        // median filter for getting rid of white "veins"
+//        img = (Img<DoubleType>) ops.run(MedianFilter.class, img, 3);
+//        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+//
+//        processStack.addSlice("7. Median Filter", makeSlice(img));
+
         // average filter
-        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 20);
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(1.0));
-        
-        final Img<BitType> binImg = (Img<BitType>) ops.run(Threshold.class, img);
+        img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 9);
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
+    
+        processStack.addSlice("8. Mean Smoothing", makeSlice(img));
+
+        // get the binary mask
+        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
     
-        // final normalization for saving (soon to be replaced)
-        img = (Img<DoubleType>) ops.run(Normalize.class, img, new DoubleType(0.0), new DoubleType(65535.0));
-        final Img<T> fImg = (Img<T>) ops.convert().uint16(img);
-        
-        return fImg;
+        processStack.addSlice("9. Binary Mask", makeSlice(img));
+    
+        final ImagePlus processImage = new ImagePlus("Process", processStack);
+        processImage.getProcessor().convertToByte(true);
+        final ContrastEnhancer ch = new ContrastEnhancer();
+        for (int i = 1; i <= processImage.getStack().getSize(); i++) {
+            final ImageProcessor ip = processImage.getStack().getProcessor(i);
+            ch.equalize(ip);
+        }
+        processImage.show();
+
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0, 255);
+        return (Img<T>) ops.convert().uint8(img);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private ImageProcessor makeSlice(Img img) {
+        final ImageProcessor ip = ImageJFunctions.wrapBit(img, "").getProcessor();
+        ip.convertToByte(true);
+        return ip;
     }
     
     /*
@@ -213,7 +268,6 @@ public class WoundHealing implements Command {
         
         final ImageJ ij = new ImageJ();
         ij.launch(args);
-        
         ij.command().run(WoundHealing.class, true);
     }
 }

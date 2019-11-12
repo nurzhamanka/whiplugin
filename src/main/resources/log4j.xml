@@ -9,7 +9,7 @@
     </appender>
 
     <root>
-        <priority value ="debug"></priority>
+        <priority value ="OFF"></priority>
         <appender-ref ref="fileAppender"></appender-ref>
     </root>
 
