@@ -1,4 +1,5 @@
 import fiji.util.gui.GenericDialogPlus;
+import graphs.editor.GraphEditor;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.ContrastEnhancer;
@@ -44,6 +45,7 @@ public class WoundHealing extends DynamicCommand {
     private LogService log;
     
     /** PARAMETERS */
+    private GraphEditor gEditor;
     private Dataset activeDataset;
     private File inputDir, outputDir;
     private boolean isSaveBinMask;
@@ -54,12 +56,36 @@ public class WoundHealing extends DynamicCommand {
     
     @SuppressWarnings("unchecked")
     public void run() {
-        
+
+//        try {
+//            SwingUtilities.invokeAndWait(() -> {
+//
+//                try {
+//                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//                } catch (Exception e1) {
+//                    e1.printStackTrace();
+//                }
+//
+//                mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
+//                mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
+//
+//                if (gEditor == null) {
+//                    gEditor = new BasicGraphEditor();
+//                }
+//                gEditor.createFrame(new EditorMenuBar(gEditor)).setVisible(true);
+//            });
+//        } catch (InterruptedException e) {
+//            cancel("Algorithm Builder was interrupted");
+//        } catch (InvocationTargetException e) {
+//            log.error(e);
+//            cancel(e.getMessage());
+//        }
+    
         activeDataset = imageDisplayService.getActiveDataset();
         if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
             dialogActiveDataset.addMessage("Do you want to process the active dataset?");
-            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whi-plugin");
+            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whiplugin");
             dialogActiveDataset.showDialog();
             if (dialogActiveDataset.wasOKed()) {
                 populateParams(false);
