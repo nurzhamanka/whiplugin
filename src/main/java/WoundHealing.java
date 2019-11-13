@@ -44,7 +44,7 @@ public class WoundHealing extends DynamicCommand {
     private LogService log;
     
     /** PARAMETERS */
-    private Dataset openImg;
+    private Dataset activeDataset;
     private File inputDir, outputDir;
     private boolean isSaveBinMask;
     private boolean isSaveOutline;
@@ -55,8 +55,8 @@ public class WoundHealing extends DynamicCommand {
     @SuppressWarnings("unchecked")
     public void run() {
         
-        openImg = imageDisplayService.getActiveDataset();
-        if (openImg != null) {
+        activeDataset = imageDisplayService.getActiveDataset();
+        if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
             dialogActiveDataset.addMessage("Do you want to process the active dataset?");
             dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whi-plugin");
