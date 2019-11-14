@@ -5,23 +5,23 @@ import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraphView;
-import graphs.editor.EditorActions.HistoryAction;
-import graphs.editor.EditorActions.NewAction;
-import graphs.editor.EditorActions.OpenAction;
-import graphs.editor.EditorActions.SaveAction;
+import graphs.editor.Actions.HistoryAction;
+import graphs.editor.Actions.NewAction;
+import graphs.editor.Actions.OpenAction;
+import graphs.editor.Actions.SaveAction;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class EditorToolBar extends JToolBar {
+public class ToolBar extends JToolBar {
     
     
     private static final long serialVersionUID = -8015443128436394471L;
     
     private boolean ignoreZoomChange = false;
     
-    public EditorToolBar(final GraphEditor editor, int orientation) {
+    public ToolBar(final GraphEditor editor, int orientation) {
         super(orientation);
         setBorder(BorderFactory.createCompoundBorder(BorderFactory
                 .createEmptyBorder(3, 3, 3, 3), getBorder()));

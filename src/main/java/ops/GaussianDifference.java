@@ -15,7 +15,7 @@ import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "gaussdiff")
 public class GaussianDifference<T extends RealType<T>> extends AbstractOp {
 

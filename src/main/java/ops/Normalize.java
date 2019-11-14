@@ -13,7 +13,7 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Iterator;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "imnorm")
 public class Normalize<T extends RealType<T>> extends AbstractOp {
     

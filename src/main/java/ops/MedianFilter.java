@@ -21,7 +21,7 @@ import org.scijava.ui.UIService;
 import java.util.Arrays;
 
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "median")
 public class MedianFilter extends AbstractOp {
 

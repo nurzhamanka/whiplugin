@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"ALL", "FieldCanBeLocal"})
 @Plugin(type = Command.class, menuPath = "Plugins>Wound Healing Tool")
 public class WoundHealing extends DynamicCommand {
     
@@ -72,7 +73,7 @@ public class WoundHealing extends DynamicCommand {
 //                if (gEditor == null) {
 //                    gEditor = new BasicGraphEditor();
 //                }
-//                gEditor.createFrame(new EditorMenuBar(gEditor)).setVisible(true);
+//                gEditor.createFrame(new MenuBar(gEditor)).setVisible(true);
 //            });
 //        } catch (InterruptedException e) {
 //            cancel("Algorithm Builder was interrupted");
@@ -80,7 +81,7 @@ public class WoundHealing extends DynamicCommand {
 //            log.error(e);
 //            cancel(e.getMessage());
 //        }
-    
+        
         activeDataset = imageDisplayService.getActiveDataset();
         if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
@@ -178,10 +179,10 @@ public class WoundHealing extends DynamicCommand {
                     log.error(e);
                     continue;
                 }
-    
+                
                 // process the image
                 final Dataset result = process(currentImage);
-        
+                
                 // save the image
                 try {
                     datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
@@ -298,7 +299,7 @@ public class WoundHealing extends DynamicCommand {
      *
      * It will launch ImageJ and then run this command using the CommandService.
      */
-    public static void main(final String... args) throws Exception {
+    public static void main(final String... args) {
         
         final ImageJ ij = new ImageJ();
         ij.launch(args);

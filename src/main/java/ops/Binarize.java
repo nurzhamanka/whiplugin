@@ -29,7 +29,7 @@ import org.scijava.plugin.Plugin;
 import java.util.List;
 
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "binarize")
 public class Binarize extends AbstractOp {
     

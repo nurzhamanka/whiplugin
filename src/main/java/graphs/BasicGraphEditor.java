@@ -1,6 +1,3 @@
-/**
- * Copyright (c) 2006-2012, JGraph Ltd
- */
 package graphs;
 
 import com.mxgraph.io.mxCodec;
@@ -17,50 +14,33 @@ import com.mxgraph.util.mxPoint;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
-import graphs.editor.EditorMenuBar;
-import graphs.editor.EditorPalette;
 import graphs.editor.GraphEditor;
+import graphs.editor.MenuBar;
+import graphs.editor.Palette;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
 import java.text.NumberFormat;
-import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class BasicGraphEditor extends GraphEditor {
-    /**
-     * Holds the shared number formatter.
-     *
-     * @see NumberFormat#getInstance()
-     */
-    public static final NumberFormat numberFormat = NumberFormat.getInstance();
-    /**
-     *
-     */
-    private static final long serialVersionUID = -4601740824088314699L;
-    /**
-     * Holds the URL for the icon to be used as a handle for creating new
-     * connections. This is currently unused.
-     */
-    public static URL url = null;
     
-    //GraphEditor.class.getResource("/examples/swing/images/connector.gif");
+    public static final NumberFormat numberFormat = NumberFormat.getInstance();
+    
+    private static final long serialVersionUID = -4601740824088314699L;
     
     public BasicGraphEditor() {
         this("Algorithm Builder", new CustomGraphComponent(new CustomGraph()));
     }
     
-    /**
-     *
-     */
     public BasicGraphEditor(String appTitle, mxGraphComponent component) {
         super(appTitle, component);
         final mxGraph graph = graphComponent.getGraph();
         
         // Creates the shapes palette
-        EditorPalette nodesPalette = insertPalette("Nodes");
+        Palette nodesPalette = insertPalette("Nodes");
         
         // Sets the edge template to be used for creating new edges if an edge
         // is clicked in the shape palette
@@ -103,22 +83,12 @@ public class BasicGraphEditor extends GraphEditor {
         mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
         
         GraphEditor editor = new BasicGraphEditor();
-        editor.createFrame(new EditorMenuBar(editor)).setVisible(true);
+        editor.createFrame(new MenuBar(editor)).setVisible(true);
     }
     
-    /**
-     *
-     */
     public static class CustomGraphComponent extends mxGraphComponent {
-        
-        /**
-         *
-         */
         private static final long serialVersionUID = -6833603133512882012L;
         
-        /**
-         * @param graph
-         */
         public CustomGraphComponent(mxGraph graph) {
             super(graph);
             
@@ -140,11 +110,6 @@ public class BasicGraphEditor extends GraphEditor {
             getViewport().setBackground(Color.WHITE);
         }
         
-        /**
-         * Overrides drop behaviour to set the cell style if the target
-         * is not a valid drop target and the cells are of the same
-         * type (eg. both vertices or both edges).
-         */
         public Object[] importCells(Object[] cells, double dx, double dy,
                                     Object target, Point location) {
             if (target == null && cells.length == 1 && location != null) {
@@ -170,106 +135,75 @@ public class BasicGraphEditor extends GraphEditor {
         
     }
     
-    /**
-     * A graph that creates new edges from a given template edge.
-     */
     public static class CustomGraph extends mxGraph {
-        /**
-         * Holds the edge to be used as a template for inserting new edges.
-         */
         protected Object edgeTemplate;
         
-        /**
-         * Custom graph that defines the alternate edge style to be used when
-         * the middle control point of edges is double clicked (flipped).
-         */
         public CustomGraph() {
-            setAlternateEdgeStyle("edgeStyle=mxEdgeStyle.ElbowConnector;elbow=vertical");
+            setAlternateEdgeStyle(mxConstants.EDGESTYLE_TOPTOBOTTOM);
         }
         
-        /**
-         * Sets the edge template to be used to inserting edges.
-         */
         public void setEdgeTemplate(Object template) {
             edgeTemplate = template;
         }
         
-        /**
-         * Prints out some useful information about the cell in the tooltip.
-         */
         public String getToolTipForCell(Object cell) {
-            String tip = "<html>";
+            StringBuilder tip = new StringBuilder("<html>");
             mxGeometry geo = getModel().getGeometry(cell);
             mxCellState state = getView().getState(cell);
             
             if (getModel().isEdge(cell)) {
-                tip += "points={";
+                tip.append("points={");
                 
                 if (geo != null) {
                     List<mxPoint> points = geo.getPoints();
                     
                     if (points != null) {
-                        Iterator<mxPoint> it = points.iterator();
                         
-                        while (it.hasNext()) {
-                            mxPoint point = it.next();
-                            tip += "[x=" + numberFormat.format(point.getX())
-                                    + ",y=" + numberFormat.format(point.getY())
-                                    + "],";
+                        for (mxPoint point : points) {
+                            tip.append("[x=").append(numberFormat.format(point.getX())).append(",y=").append(numberFormat.format(point.getY())).append("],");
                         }
                         
-                        tip = tip.substring(0, tip.length() - 1);
+                        tip = new StringBuilder(tip.substring(0, tip.length() - 1));
                     }
                 }
                 
-                tip += "}<br>";
-                tip += "absPoints={";
+                tip.append("}<br>");
+                tip.append("absPoints={");
                 
                 if (state != null) {
                     
                     for (int i = 0; i < state.getAbsolutePointCount(); i++) {
                         mxPoint point = state.getAbsolutePoint(i);
-                        tip += "[x=" + numberFormat.format(point.getX())
-                                + ",y=" + numberFormat.format(point.getY())
-                                + "],";
+                        tip.append("[x=").append(numberFormat.format(point.getX())).append(",y=").append(numberFormat.format(point.getY())).append("],");
                     }
                     
-                    tip = tip.substring(0, tip.length() - 1);
+                    tip = new StringBuilder(tip.substring(0, tip.length() - 1));
                 }
                 
-                tip += "}";
+                tip.append("}");
             } else {
-                tip += "geo=[";
+                tip.append("geo=[");
                 
                 if (geo != null) {
-                    tip += "x=" + numberFormat.format(geo.getX()) + ",y="
-                            + numberFormat.format(geo.getY()) + ",width="
-                            + numberFormat.format(geo.getWidth()) + ",height="
-                            + numberFormat.format(geo.getHeight());
+                    tip.append("x=").append(numberFormat.format(geo.getX())).append(",y=").append(numberFormat.format(geo.getY())).append(",width=").append(numberFormat.format(geo.getWidth())).append(",height=").append(numberFormat.format(geo.getHeight()));
                 }
                 
-                tip += "]<br>";
-                tip += "state=[";
+                tip.append("]<br>");
+                tip.append("state=[");
                 
                 if (state != null) {
-                    tip += "x=" + numberFormat.format(state.getX()) + ",y="
-                            + numberFormat.format(state.getY()) + ",width="
-                            + numberFormat.format(state.getWidth())
-                            + ",height="
-                            + numberFormat.format(state.getHeight());
+                    tip.append("x=").append(numberFormat.format(state.getX())).append(",y=").append(numberFormat.format(state.getY())).append(",width=").append(numberFormat.format(state.getWidth())).append(",height=").append(numberFormat.format(state.getHeight()));
                 }
                 
-                tip += "]";
+                tip.append("]");
             }
             
             mxPoint trans = getView().getTranslate();
             
-            tip += "<br>scale=" + numberFormat.format(getView().getScale())
-                    + ", translate=[x=" + numberFormat.format(trans.getX())
-                    + ",y=" + numberFormat.format(trans.getY()) + "]";
-            tip += "</html>";
+            tip.append("<br>scale=").append(numberFormat.format(getView().getScale())).append(", translate=[x=").append(numberFormat.format(trans.getX())).append(",y=").append(numberFormat.format(trans.getY())).append("]");
+            tip.append("</html>");
             
-            return tip;
+            return tip.toString();
         }
         
         

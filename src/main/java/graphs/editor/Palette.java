@@ -1,6 +1,3 @@
-/**
- * Copyright (c) 2007-2012, JGraph Ltd
- */
 package graphs.editor;
 
 import com.mxgraph.model.mxCell;
@@ -14,78 +11,32 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class EditorPalette extends JPanel {
-    
-    /**
-     *
-     */
+public class Palette extends JPanel {
     private static final long serialVersionUID = 7771113885935187066L;
-    
-    /**
-     *
-     */
     protected JLabel selectedEntry = null;
-    
-    /**
-     *
-     */
     protected mxEventSource eventSource = new mxEventSource(this);
-    
-    /**
-     *
-     */
     protected Color gradientColor = new Color(117, 195, 173);
-    
-    /**
-     *
-     */
     @SuppressWarnings("serial")
-    public EditorPalette() {
+    public Palette() {
         setBackground(new Color(149, 230, 190));
         setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
         
         // Clears the current selection when the background is clicked
         addMouseListener(new MouseListener() {
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-             */
             public void mousePressed(MouseEvent e) {
                 clearSelection();
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-             */
             public void mouseClicked(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-             */
             public void mouseEntered(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-             */
             public void mouseExited(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-             */
             public void mouseReleased(MouseEvent e) {
             }
             
@@ -116,17 +67,9 @@ public class EditorPalette extends JPanel {
             g2.fill(rect);
         }
     }
-    
-    /**
-     *
-     */
     public void clearSelection() {
         setSelectionEntry(null, null);
     }
-    
-    /**
-     *
-     */
     public void setSelectionEntry(JLabel entry, mxGraphTransferable t) {
         JLabel previous = selectedEntry;
         selectedEntry = entry;
@@ -144,25 +87,12 @@ public class EditorPalette extends JPanel {
         eventSource.fireEvent(new mxEventObject(mxEvent.SELECT, "entry",
                 selectedEntry, "transferable", t, "previous", previous));
     }
-    
-    /**
-     *
-     */
     public void setPreferredWidth(int width) {
         int cols = Math.max(1, width / 55);
         setPreferredSize(new Dimension(width,
                 (getComponentCount() * 55 / cols) + 30));
         revalidate();
     }
-    
-    /**
-     * @param name
-     * @param icon
-     * @param style
-     * @param width
-     * @param height
-     * @param value
-     */
     public void addEdgeTemplate(final String name, ImageIcon icon,
                                 String style, int width, int height, Object value) {
         mxGeometry geometry = new mxGeometry(0, 0, width, height);
@@ -175,15 +105,6 @@ public class EditorPalette extends JPanel {
         
         addTemplate(name, icon, cell);
     }
-    
-    /**
-     * @param name
-     * @param icon
-     * @param style
-     * @param width
-     * @param height
-     * @param value
-     */
     public void addTemplate(final String name, ImageIcon icon, String style,
                             int width, int height, Object value) {
         mxCell cell = new mxCell(value, new mxGeometry(0, 0, width, height),
@@ -192,12 +113,6 @@ public class EditorPalette extends JPanel {
         
         addTemplate(name, icon, cell);
     }
-    
-    /**
-     * @param name
-     * @param icon
-     * @param cell
-     */
     public void addTemplate(final String name, ImageIcon icon, mxCell cell) {
         mxRectangle bounds = (mxGeometry) cell.getGeometry().clone();
         final mxGraphTransferable t = new mxGraphTransferable(
@@ -213,8 +128,8 @@ public class EditorPalette extends JPanel {
         
         final JLabel entry = new JLabel(icon);
         entry.setPreferredSize(new Dimension(50, 50));
-        entry.setBackground(EditorPalette.this.getBackground().brighter());
-        entry.setFont(new Font(entry.getFont().getFamily(), 0, 10));
+        entry.setBackground(Palette.this.getBackground().brighter());
+        entry.setFont(new Font(entry.getFont().getFamily(), Font.PLAIN, 10));
         
         entry.setVerticalTextPosition(JLabel.BOTTOM);
         entry.setHorizontalTextPosition(JLabel.CENTER);
@@ -224,57 +139,24 @@ public class EditorPalette extends JPanel {
         entry.setText(name);
         
         entry.addMouseListener(new MouseListener() {
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-             */
             public void mousePressed(MouseEvent e) {
                 setSelectionEntry(entry, t);
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-             */
             public void mouseClicked(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-             */
             public void mouseEntered(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-             */
             public void mouseExited(MouseEvent e) {
             }
-            
-            /*
-             * (non-Javadoc)
-             * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-             */
             public void mouseReleased(MouseEvent e) {
             }
             
         });
         
         // Install the handler for dragging nodes into a graph
-        DragGestureListener dragGestureListener = new DragGestureListener() {
-            /**
-             *
-             */
-            public void dragGestureRecognized(DragGestureEvent e) {
-                e
-                        .startDrag(null, mxSwingConstants.EMPTY_IMAGE, new Point(),
-                                t, null);
-            }
-            
-        };
+        DragGestureListener dragGestureListener = e -> e
+                .startDrag(null, mxSwingConstants.EMPTY_IMAGE, new Point(),
+                        t, null);
         
         DragSource dragSource = new DragSource();
         dragSource.createDefaultDragGestureRecognizer(entry,
@@ -282,45 +164,18 @@ public class EditorPalette extends JPanel {
         
         add(entry);
     }
-    
-    /**
-     * @param eventName
-     * @param listener
-     * @see com.mxgraph.util.mxEventSource#addListener(String, com.mxgraph.util.mxEventSource.mxIEventListener)
-     */
     public void addListener(String eventName, mxIEventListener listener) {
         eventSource.addListener(eventName, listener);
     }
-    
-    /**
-     * @return whether or not event are enabled for this palette
-     * @see com.mxgraph.util.mxEventSource#isEventsEnabled()
-     */
     public boolean isEventsEnabled() {
         return eventSource.isEventsEnabled();
     }
-    
-    /**
-     * @param eventsEnabled
-     * @see com.mxgraph.util.mxEventSource#setEventsEnabled(boolean)
-     */
     public void setEventsEnabled(boolean eventsEnabled) {
         eventSource.setEventsEnabled(eventsEnabled);
     }
-    
-    /**
-     * @param listener
-     * @see com.mxgraph.util.mxEventSource#removeListener(com.mxgraph.util.mxEventSource.mxIEventListener)
-     */
     public void removeListener(mxIEventListener listener) {
         eventSource.removeListener(listener);
     }
-    
-    /**
-     * @param eventName
-     * @param listener
-     * @see com.mxgraph.util.mxEventSource#removeListener(com.mxgraph.util.mxEventSource.mxIEventListener, String)
-     */
     public void removeListener(mxIEventListener listener, String eventName) {
         eventSource.removeListener(listener, eventName);
     }

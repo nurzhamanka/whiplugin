@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2001-2012, JGraph Ltd
- */
 package graphs.editor;
 
 import com.mxgraph.canvas.mxICanvas;
@@ -12,7 +9,6 @@ import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.swing.handler.mxConnectionHandler;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.swing.mxGraphOutline;
 import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.*;
 import com.mxgraph.util.mxCellRenderer.CanvasFactory;
@@ -29,7 +25,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,15 +36,9 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Map;
 
-/**
- *
- */
-public class EditorActions {
+@SuppressWarnings("ALL")
+public class Actions {
     
-    /**
-     * @param e
-     * @return Returns the graph for the given action event.
-     */
     public static GraphEditor getEditor(ActionEvent e) {
         if (e.getSource() instanceof Component) {
             Component component = (Component) e.getSource();
@@ -65,125 +54,24 @@ public class EditorActions {
         return null;
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
-    public static class ToggleRulersItem extends JCheckBoxMenuItem {
-        /**
-         *
-         */
-        public ToggleRulersItem(final GraphEditor editor, String name) {
-            super(name);
-            setSelected(editor.getGraphComponent().getColumnHeader() != null);
-            
-            addActionListener(new ActionListener() {
-                /**
-                 *
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    mxGraphComponent graphComponent = editor
-                            .getGraphComponent();
-                    
-                    if (graphComponent.getColumnHeader() != null) {
-                        graphComponent.setColumnHeader(null);
-                        graphComponent.setRowHeader(null);
-                    } else {
-                        graphComponent.setColumnHeaderView(new EditorRuler(
-                                graphComponent,
-                                EditorRuler.ORIENTATION_HORIZONTAL));
-                        graphComponent.setRowHeaderView(new EditorRuler(
-                                graphComponent,
-                                EditorRuler.ORIENTATION_VERTICAL));
-                    }
-                }
-            });
-        }
-    }
-    
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ToggleGridItem extends JCheckBoxMenuItem {
-        /**
-         *
-         */
         public ToggleGridItem(final GraphEditor editor, String name) {
             super(name);
             setSelected(true);
-            
-            addActionListener(new ActionListener() {
-                /**
-                 *
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    mxGraphComponent graphComponent = editor
-                            .getGraphComponent();
-                    mxGraph graph = graphComponent.getGraph();
-                    boolean enabled = !graph.isGridEnabled();
-                    
-                    graph.setGridEnabled(enabled);
-                    graphComponent.setGridVisible(enabled);
-                    graphComponent.repaint();
-                    setSelected(enabled);
-                }
+    
+            addActionListener(e -> {
+                mxGraphComponent graphComponent = editor.getGraphComponent();
+                mxGraph graph = graphComponent.getGraph();
+                boolean enabled = !graph.isGridEnabled();
+                graph.setGridEnabled(enabled);
+                graphComponent.setGridVisible(enabled);
+                graphComponent.repaint();
+                setSelected(enabled);
             });
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
-    public static class ToggleOutlineItem extends JCheckBoxMenuItem {
-        /**
-         *
-         */
-        public ToggleOutlineItem(final GraphEditor editor, String name) {
-            super(name);
-            setSelected(true);
-            
-            addActionListener(new ActionListener() {
-                /**
-                 *
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    final mxGraphOutline outline = editor.getGraphOutline();
-                    outline.setVisible(!outline.isVisible());
-                    outline.revalidate();
-                    
-                    /*
-                     * (non-Javadoc)
-                     * @see java.lang.Runnable#run()
-                     */
-                    SwingUtilities.invokeLater(() -> {
-                        if (outline.getParent() instanceof JSplitPane) {
-                            if (outline.isVisible()) {
-                                ((JSplitPane) outline.getParent())
-                                        .setDividerLocation(editor
-                                                .getHeight() - 300);
-                                ((JSplitPane) outline.getParent())
-                                        .setDividerSize(6);
-                            } else {
-                                ((JSplitPane) outline.getParent())
-                                        .setDividerSize(0);
-                            }
-                        }
-                    });
-                }
-            });
-        }
-    }
-    
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ExitAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             GraphEditor editor = getEditor(e);
             
@@ -193,33 +81,20 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class StylesheetAction extends AbstractAction {
-        /**
-         *
-         */
         protected String stylesheet;
         
-        /**
-         *
-         */
         public StylesheetAction(String stylesheet) {
             this.stylesheet = stylesheet;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
                         .getSource();
                 mxGraph graph = graphComponent.getGraph();
                 mxCodec codec = new mxCodec();
-                Document doc = mxUtils.loadDocument(EditorActions.class
+                Document doc = mxUtils.loadDocument(Actions.class
                         .getResource(stylesheet).toString());
                 
                 if (doc != null) {
@@ -231,26 +106,13 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ZoomPolicyAction extends AbstractAction {
-        /**
-         *
-         */
         protected int zoomPolicy;
         
-        /**
-         *
-         */
         public ZoomPolicyAction(int zoomPolicy) {
             this.zoomPolicy = zoomPolicy;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -261,26 +123,13 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ScaleAction extends AbstractAction {
-        /**
-         *
-         */
         protected double scale;
         
-        /**
-         *
-         */
         public ScaleAction(double scale) {
             this.scale = scale;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -305,31 +154,14 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class SaveAction extends AbstractAction {
-        /**
-         *
-         */
         protected boolean showDialog;
-        
-        /**
-         *
-         */
         protected String lastDir = null;
         
-        /**
-         *
-         */
         public SaveAction(boolean showDialog) {
             this.showDialog = showDialog;
         }
         
-        /**
-         * Saves XML+PNG format.
-         */
         protected void saveXmlPng(GraphEditor editor, String filename,
                                   Color bg) throws IOException {
             mxGraphComponent graphComponent = editor.getGraphComponent();
@@ -369,9 +201,6 @@ public class EditorActions {
             }
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             GraphEditor editor = getEditor(e);
             
@@ -400,8 +229,7 @@ public class EditorActions {
                     JFileChooser fc = new JFileChooser(wd);
                     
                     // Adds the default file format
-                    FileFilter defaultFilter = xmlPngFilter;
-                    fc.addChoosableFileFilter(defaultFilter);
+                    fc.addChoosableFileFilter(xmlPngFilter);
                     
                     // Adds special vector graphics formats and HTML
                     fc.addChoosableFileFilter(new DefaultFileFilter(".mxe",
@@ -439,7 +267,7 @@ public class EditorActions {
                     // Adds filter that accepts all supported image formats
                     fc.addChoosableFileFilter(new DefaultFileFilter.ImageFileFilter(
                             "All Images"));
-                    fc.setFileFilter(defaultFilter);
+                    fc.setFileFilter(xmlPngFilter);
                     int rc = fc.showDialog(null, "Save");
                     dialogShown = true;
                     
@@ -553,14 +381,7 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ToggleDirtyAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -571,14 +392,7 @@ public class EditorActions {
         
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ToggleConnectModeAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -590,62 +404,33 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ToggleCreateTargetItem extends JCheckBoxMenuItem {
-        /**
-         *
-         */
         public ToggleCreateTargetItem(final GraphEditor editor, String name) {
             super(name);
             setSelected(true);
-            
-            addActionListener(new ActionListener() {
-                /**
-                 *
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    mxGraphComponent graphComponent = editor
-                            .getGraphComponent();
-                    
-                    if (graphComponent != null) {
-                        mxConnectionHandler handler = graphComponent
-                                .getConnectionHandler();
-                        handler.setCreateTarget(!handler.isCreateTarget());
-                        setSelected(handler.isCreateTarget());
-                    }
+    
+            addActionListener(e -> {
+                mxGraphComponent graphComponent = editor
+                        .getGraphComponent();
+        
+                if (graphComponent != null) {
+                    mxConnectionHandler handler = graphComponent
+                            .getConnectionHandler();
+                    handler.setCreateTarget(!handler.isCreateTarget());
+                    setSelected(handler.isCreateTarget());
                 }
             });
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class PromptPropertyAction extends AbstractAction {
-        /**
-         *
-         */
         protected Object target;
-        
-        /**
-         *
-         */
         protected String fieldname, message;
         
-        /**
-         *
-         */
         public PromptPropertyAction(Object target, String message) {
             this(target, message, message);
         }
         
-        /**
-         *
-         */
         public PromptPropertyAction(Object target, String message,
                                     String fieldname) {
             this.target = target;
@@ -653,9 +438,6 @@ public class EditorActions {
             this.fieldname = fieldname;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof Component) {
                 try {
@@ -666,7 +448,7 @@ public class EditorActions {
                     // TODO: Support other atomic types
                     if (current instanceof Integer) {
                         Method setter = target.getClass().getMethod(
-                                "set" + fieldname, new Class[]{int.class});
+                                "set" + fieldname, int.class);
                         
                         String value = (String) JOptionPane.showInputDialog(
                                 (Component) e.getSource(), "Value", message,
@@ -690,29 +472,16 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class TogglePropertyItem extends JCheckBoxMenuItem {
-        /**
-         *
-         */
         public TogglePropertyItem(Object target, String name, String fieldname) {
             this(target, name, fieldname, false);
         }
         
-        /**
-         *
-         */
         public TogglePropertyItem(Object target, String name, String fieldname,
                                   boolean refresh) {
             this(target, name, fieldname, refresh, null);
         }
         
-        /**
-         *
-         */
         public TogglePropertyItem(final Object target, String name,
                                   final String fieldname, final boolean refresh,
                                   ActionListener listener) {
@@ -723,26 +492,12 @@ public class EditorActions {
             if (listener != null) {
                 addActionListener(listener);
             }
-            
-            addActionListener(new ActionListener() {
-                /**
-                 *
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    execute(target, fieldname, refresh);
-                }
-            });
-            
-            PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
-                
-                /*
-                 * (non-Javadoc)
-                 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-                 */
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equalsIgnoreCase(fieldname)) {
-                        update(target, fieldname);
-                    }
+    
+            addActionListener(e -> execute(target, fieldname, refresh));
+    
+            PropertyChangeListener propertyChangeListener = evt -> {
+                if (evt.getPropertyName().equalsIgnoreCase(fieldname)) {
+                    update(target, fieldname);
                 }
             };
             
@@ -757,9 +512,6 @@ public class EditorActions {
             update(target, fieldname);
         }
         
-        /**
-         *
-         */
         public void update(Object target, String fieldname) {
             if (target != null && fieldname != null) {
                 try {
@@ -779,16 +531,13 @@ public class EditorActions {
             }
         }
         
-        /**
-         *
-         */
         public void execute(Object target, String fieldname, boolean refresh) {
             if (target != null && fieldname != null) {
                 try {
                     Method getter = target.getClass().getMethod(
                             "is" + fieldname);
                     Method setter = target.getClass().getMethod(
-                            "set" + fieldname, new Class[]{boolean.class});
+                            "set" + fieldname, boolean.class);
                     
                     Object current = getter.invoke(target);
                     
@@ -816,26 +565,13 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class HistoryAction extends AbstractAction {
-        /**
-         *
-         */
         protected boolean undo;
         
-        /**
-         *
-         */
         public HistoryAction(boolean undo) {
             this.undo = undo;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             GraphEditor editor = getEditor(e);
             
@@ -849,19 +585,12 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class NewAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             GraphEditor editor = getEditor(e);
             
             if (editor != null) {
-                if (!editor.isModified()
+                if (editor.isNotModified()
                         || JOptionPane.showConfirmDialog(editor,
                         "Lose changes?") == JOptionPane.YES_OPTION) {
                     mxGraph graph = editor.getGraphComponent().getGraph();
@@ -879,28 +608,16 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class OpenAction extends AbstractAction {
-        /**
-         *
-         */
         protected String lastDir;
-        
-        /**
-         *
-         */
+    
+        @SuppressWarnings("WeakerAccess")
         protected void resetEditor(GraphEditor editor) {
             editor.setModified(false);
             editor.getUndoManager().clear();
             editor.getGraphComponent().zoomAndCenter();
         }
         
-        /**
-         * Reads XML+PNG format.
-         */
         protected void openXmlPng(GraphEditor editor, File file)
                 throws IOException {
             Map<String, String> text = mxPngTextDecoder
@@ -925,9 +642,6 @@ public class EditorActions {
             JOptionPane.showMessageDialog(editor, "Image contains no diagram data");
         }
         
-        /**
-         * @throws IOException
-         */
         protected void openGD(GraphEditor editor, File file,
                               String gdText) {
             mxGraph graph = editor.getGraphComponent().getGraph();
@@ -948,14 +662,11 @@ public class EditorActions {
             editor.setCurrentFile(new File(lastDir + "/" + filename));
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             GraphEditor editor = getEditor(e);
             
             if (editor != null) {
-                if (!editor.isModified()
+                if (editor.isNotModified()
                         || JOptionPane.showConfirmDialog(editor,
                         "Lose changes?") == JOptionPane.YES_OPTION) {
                     mxGraph graph = editor.getGraphComponent().getGraph();
@@ -1046,39 +757,19 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ToggleAction extends AbstractAction {
-        /**
-         *
-         */
         protected String key;
-        
-        /**
-         *
-         */
         protected boolean defaultValue;
         
-        /**
-         * @param key
-         */
         public ToggleAction(String key) {
             this(key, false);
         }
         
-        /**
-         * @param key
-         */
         public ToggleAction(String key, boolean defaultValue) {
             this.key = key;
             this.defaultValue = defaultValue;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             mxGraph graph = mxGraphActions.getGraph(e);
             
@@ -1088,34 +779,18 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class KeyValueAction extends AbstractAction {
-        /**
-         *
-         */
         protected String key, value;
         
-        /**
-         * @param key
-         */
         public KeyValueAction(String key) {
             this(key, null);
         }
         
-        /**
-         * @param key
-         */
         public KeyValueAction(String key, String value) {
             this.key = key;
             this.value = value;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             mxGraph graph = mxGraphActions.getGraph(e);
             
@@ -1125,27 +800,14 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class PromptValueAction extends AbstractAction {
-        /**
-         *
-         */
         protected String key, message;
         
-        /**
-         * @param key
-         */
         public PromptValueAction(String key, String message) {
             this.key = key;
             this.message = message;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof Component) {
                 mxGraph graph = mxGraphActions.getGraph(e);
@@ -1168,26 +830,13 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class AlignCellsAction extends AbstractAction {
-        /**
-         *
-         */
         protected String align;
         
-        /**
-         * @param align
-         */
         public AlignCellsAction(String align) {
             this.align = align;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             mxGraph graph = mxGraphActions.getGraph(e);
             
@@ -1197,14 +846,7 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class AutosizeAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             mxGraph graph = mxGraphActions.getGraph(e);
             
@@ -1224,27 +866,14 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class ColorAction extends AbstractAction {
-        /**
-         *
-         */
         protected String name, key;
         
-        /**
-         * @param key
-         */
         public ColorAction(String name, String key) {
             this.name = name;
             this.key = key;
         }
         
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -1263,14 +892,7 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class BackgroundImageAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -1300,14 +922,7 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class BackgroundAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e
@@ -1326,14 +941,7 @@ public class EditorActions {
         }
     }
     
-    /**
-     *
-     */
-    @SuppressWarnings("serial")
     public static class StyleAction extends AbstractAction {
-        /**
-         *
-         */
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof mxGraphComponent) {
                 mxGraphComponent graphComponent = (mxGraphComponent) e

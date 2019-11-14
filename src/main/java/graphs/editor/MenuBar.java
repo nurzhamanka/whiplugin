@@ -1,29 +1,23 @@
 package graphs.editor;
 
-import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
-import graphs.editor.EditorActions.*;
+import graphs.editor.Actions.*;
 
 import javax.swing.*;
 
-public class EditorMenuBar extends JMenuBar {
-    
-    /**
-     *
-     */
+public class MenuBar extends JMenuBar {
     private static final long serialVersionUID = 4060203894740766714L;
     
-    public EditorMenuBar(final GraphEditor editor) {
+    public MenuBar(final GraphEditor editor) {
         final mxGraphComponent graphComponent = editor.getGraphComponent();
         final mxGraph graph = graphComponent.getGraph();
-        mxAnalysisGraph aGraph = new mxAnalysisGraph();
         
-        JMenu menu = null;
-        JMenu submenu = null;
+        JMenu menu;
+        JMenu submenu;
         
         // Creates the file menu
         menu = add(new JMenu("File"));
@@ -98,7 +92,6 @@ public class EditorMenuBar extends JMenuBar {
         menu.addSeparator();
         
         menu.add(new ToggleGridItem(editor, "Grid"));
-        menu.add(new ToggleRulersItem(editor, "Rulers"));
         
         menu.addSeparator();
         
@@ -141,8 +134,6 @@ public class EditorMenuBar extends JMenuBar {
         
         // Creates the diagram menu
         menu = add(new JMenu("Diagram"));
-        
-        menu.add(new ToggleOutlineItem(editor, "Outline"));
         
         menu.addSeparator();
         
@@ -254,11 +245,6 @@ public class EditorMenuBar extends JMenuBar {
         
         submenu.add(editor.bind("Connect mode", new ToggleConnectModeAction()));
     }
-    
-    /**
-     * Adds menu items to the given shape menu. This is factored out because
-     * the shape menu appears in the menubar and also in the popupmenu.
-     */
     public static void populateShapeMenu(JMenu menu, GraphEditor editor) {
         
         menu.add(editor.bind("Home", mxGraphActions.getHomeAction()));
@@ -302,11 +288,6 @@ public class EditorMenuBar extends JMenuBar {
         menu.add(editor.bind("Autosize", new AutosizeAction()));
         
     }
-    
-    /**
-     * Adds menu items to the given format menu. This is factored out because
-     * the format menu appears in the menubar and also in the popupmenu.
-     */
     public static void populateFormatMenu(JMenu menu, GraphEditor editor) {
         JMenu submenu = (JMenu) menu.add(new JMenu("Background"));
         

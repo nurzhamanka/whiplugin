@@ -10,6 +10,7 @@ import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+@SuppressWarnings("FieldCanBeLocal")
 @Plugin(type = Op.class, name = "imsquare")
 public class SquareImage<T extends RealType<T>> extends AbstractOp {
     
@@ -24,7 +25,7 @@ public class SquareImage<T extends RealType<T>> extends AbstractOp {
     
     @Override
     public void run() {
-    
+        
         log.info("Square Image...");
         final long startTime = System.currentTimeMillis();
         

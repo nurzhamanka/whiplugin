@@ -1,6 +1,3 @@
-/**
- * Copyright (c) 2008, Gaudenz Alder
- */
 package graphs.editor;
 
 import com.mxgraph.swing.handler.mxKeyboardHandler;
@@ -9,21 +6,10 @@ import com.mxgraph.swing.util.mxGraphActions;
 
 import javax.swing.*;
 
-/**
- * @author Administrator
- */
-public class EditorKeyboardHandler extends mxKeyboardHandler {
-    
-    /**
-     * @param graphComponent
-     */
-    public EditorKeyboardHandler(mxGraphComponent graphComponent) {
+public class KeyboardHandler extends mxKeyboardHandler {
+    public KeyboardHandler(mxGraphComponent graphComponent) {
         super(graphComponent);
     }
-    
-    /**
-     * Return JTree's input map.
-     */
     protected InputMap getInputMap(int condition) {
         InputMap map = super.getInputMap(condition);
         
@@ -43,19 +29,15 @@ public class EditorKeyboardHandler extends mxKeyboardHandler {
         
         return map;
     }
-    
-    /**
-     * Return the mapping between JTree's input map and JGraph's actions.
-     */
     protected ActionMap createActionMap() {
         ActionMap map = super.createActionMap();
-        
-        map.put("save", new EditorActions.SaveAction(false));
-        map.put("saveAs", new EditorActions.SaveAction(true));
-        map.put("new", new EditorActions.NewAction());
-        map.put("open", new EditorActions.OpenAction());
-        map.put("undo", new EditorActions.HistoryAction(true));
-        map.put("redo", new EditorActions.HistoryAction(false));
+    
+        map.put("save", new Actions.SaveAction(false));
+        map.put("saveAs", new Actions.SaveAction(true));
+        map.put("new", new Actions.NewAction());
+        map.put("open", new Actions.OpenAction());
+        map.put("undo", new Actions.HistoryAction(true));
+        map.put("redo", new Actions.HistoryAction(false));
         map.put("selectVertices", mxGraphActions.getSelectVerticesAction());
         map.put("selectEdges", mxGraphActions.getSelectEdgesAction());
         

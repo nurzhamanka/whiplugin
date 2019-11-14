@@ -15,7 +15,7 @@ import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal", "WeakerAccess"})
 @Plugin(type = Op.class, name = "denoiser")
 public class AdaptiveDenoiser<T extends RealType<T>> extends AbstractOp {
     
