@@ -25,31 +25,31 @@ import java.text.NumberFormat;
 import java.util.List;
 
 @SuppressWarnings("ALL")
-public class BasicGraphEditor extends GraphEditor {
+public class AlgorithmFlowEditor extends GraphEditor {
     
     public static final NumberFormat numberFormat = NumberFormat.getInstance();
     
     private static final long serialVersionUID = -4601740824088314699L;
     
-    public BasicGraphEditor() {
+    public AlgorithmFlowEditor() {
         this("Algorithm Builder", new CustomGraphComponent(new CustomGraph()));
     }
     
-    public BasicGraphEditor(String appTitle, mxGraphComponent component) {
+    public AlgorithmFlowEditor(String appTitle, mxGraphComponent component) {
         super(appTitle, component);
         final mxGraph graph = graphComponent.getGraph();
         
         // Creates the shapes palette
-        Palette nodesPalette = insertPalette("Nodes");
+        final Palette nodesPalette = insertPalette("Nodes");
         
         // Sets the edge template to be used for creating new edges if an edge
         // is clicked in the shape palette
         nodesPalette.addListener(mxEvent.SELECT, (sender, evt) -> {
-            Object tmp = evt.getProperty("transferable");
+            final Object tmp = evt.getProperty("transferable");
             
             if (tmp instanceof mxGraphTransferable) {
-                mxGraphTransferable t = (mxGraphTransferable) tmp;
-                Object cell = t.getCells()[0];
+                final mxGraphTransferable t = (mxGraphTransferable) tmp;
+                final Object cell = t.getCells()[0];
                 
                 if (graph.getModel().isEdge(cell)) {
                     ((CustomGraph) graph).setEdgeTemplate(cell);
@@ -72,20 +72,6 @@ public class BasicGraphEditor extends GraphEditor {
                 "ellipse", 50, 50, "Fork");
     }
     
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
-        
-        mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
-        mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
-        
-        GraphEditor editor = new BasicGraphEditor();
-        editor.createFrame(new MenuBar(editor)).setVisible(true);
-    }
-    
     public static class CustomGraphComponent extends mxGraphComponent {
         private static final long serialVersionUID = -6833603133512882012L;
         
@@ -99,53 +85,49 @@ public class BasicGraphEditor extends GraphEditor {
             getConnectionHandler().setCreateTarget(true);
             
             // Loads the defalt stylesheet from an external file
-            mxCodec codec = new mxCodec();
-            Document doc = mxUtils.loadDocument(GraphEditor.class.getResource(
-                    "/graphs/style/default-style.xml")
-                    .toString());
+            final mxCodec codec = new mxCodec();
+            final Document doc = mxUtils.loadDocument(GraphEditor.class.getResource("/graphs/style/basic-style.xml").toString());
             codec.decode(doc.getDocumentElement(), graph.getStylesheet());
             
             // Sets the background to white
             getViewport().setOpaque(true);
             getViewport().setBackground(Color.WHITE);
         }
-        
-        public Object[] importCells(Object[] cells, double dx, double dy,
-                                    Object target, Point location) {
+    
+        public Object[] importCells(Object[] cells, double dx, double dy, Object target, Point location) {
+            
             if (target == null && cells.length == 1 && location != null) {
                 target = getCellAt(location.x, location.y);
                 
                 if (target instanceof mxICell && cells[0] instanceof mxICell) {
-                    mxICell targetCell = (mxICell) target;
-                    mxICell dropCell = (mxICell) cells[0];
-                    
-                    if (targetCell.isVertex() == dropCell.isVertex()
-                            || targetCell.isEdge() == dropCell.isEdge()) {
-                        mxIGraphModel model = graph.getModel();
+                    final mxICell targetCell = (mxICell) target;
+                    final mxICell dropCell = (mxICell) cells[0];
+    
+                    if (targetCell.isVertex() == dropCell.isVertex() || targetCell.isEdge() == dropCell.isEdge()) {
+                        final mxIGraphModel model = graph.getModel();
                         model.setStyle(target, model.getStyle(cells[0]));
                         graph.setSelectionCell(target);
-                        
                         return null;
                     }
                 }
             }
-            
             return super.importCells(cells, dx, dy, target, location);
         }
         
     }
     
     public static class CustomGraph extends mxGraph {
+    
         protected Object edgeTemplate;
         
         public CustomGraph() {
-            setAlternateEdgeStyle(mxConstants.EDGESTYLE_TOPTOBOTTOM);
         }
         
         public void setEdgeTemplate(Object template) {
             edgeTemplate = template;
         }
-        
+    
+        /* information displayed when the mouse cursor is hovering on the cell */
         public String getToolTipForCell(Object cell) {
             StringBuilder tip = new StringBuilder("<html>");
             mxGeometry geo = getModel().getGeometry(cell);
@@ -205,19 +187,46 @@ public class BasicGraphEditor extends GraphEditor {
             
             return tip.toString();
         }
-        
-        
+    
+        @Override
         public Object createEdge(Object parent, String id, Object value,
                                  Object source, Object target, String style) {
             if (edgeTemplate != null) {
-                mxCell edge = (mxCell) cloneCells(new Object[]{edgeTemplate})[0];
+                final mxCell edge = (mxCell) cloneCells(new Object[]{edgeTemplate})[0];
                 edge.setId(id);
-                
                 return edge;
             }
             
             return super.createEdge(parent, id, value, source, target, style);
         }
+    
+        @Override
+        public boolean isAllowDanglingEdges() {
+            return false;
+        }
+    
+        @Override
+        public boolean isAllowLoops() {
+            return false;
+        }
+    
+        @Override
+        public boolean isCellResizable(Object cell) {
+            return false;
+        }
+    }
+    
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
         
+        mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
+        mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
+        
+        final GraphEditor editor = new AlgorithmFlowEditor();
+        editor.createFrame(new MenuBar(editor)).setVisible(true);
     }
 }

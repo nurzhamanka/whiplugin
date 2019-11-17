@@ -135,42 +135,15 @@ public class MenuBar extends JMenuBar {
         // Creates the diagram menu
         menu = add(new JMenu("Diagram"));
         
-        menu.addSeparator();
-        
         submenu = (JMenu) menu.add(new JMenu("Background"));
         
         submenu.add(editor.bind("BG color", new BackgroundAction()));
         submenu.add(editor.bind("BG image", new BackgroundImageAction()));
         
         submenu = (JMenu) menu.add(new JMenu("Layout"));
-        
-        submenu.add(editor.graphLayout("verticalHierarchical", true));
-        submenu.add(editor.graphLayout("horizontalHierarchical", true));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.graphLayout("verticalPartition", false));
-        submenu.add(editor.graphLayout("horizontalPartition", false));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.graphLayout("verticalStack", false));
-        submenu.add(editor.graphLayout("horizontalStack", false));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.graphLayout("verticalTree", true));
-        submenu.add(editor.graphLayout("horizontalTree", true));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.graphLayout("placeEdgeLabels", false));
-        submenu.add(editor.graphLayout("parallelEdges", false));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.graphLayout("organicLayout", true));
-        submenu.add(editor.graphLayout("circleLayout", true));
+    
+        submenu.add(editor.graphLayout("Vertical Hierarchy", true));
+        submenu.add(editor.graphLayout("Horizontal Hierarchy", true));
         
         submenu = (JMenu) menu.add(new JMenu("Style"));
         

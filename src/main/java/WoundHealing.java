@@ -71,7 +71,7 @@ public class WoundHealing extends DynamicCommand {
 //                mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
 //
 //                if (gEditor == null) {
-//                    gEditor = new BasicGraphEditor();
+//                    gEditor = new AlgorithmFlowEditor();
 //                }
 //                gEditor.createFrame(new MenuBar(gEditor)).setVisible(true);
 //            });

@@ -28,16 +28,6 @@
         <add as="endArrow" value="classic"/>
         <add as="edgeStyle" value="none"/>
     </add>
-    <add as="arrow">
-        <add as="shape" value="arrow"/>
-        <add as="fillColor" value="red"/>
-    </add>
-    <add as="swimlane">
-        <add as="shape" value="swimlane"/>
-        <add as="fontSize" value="12"/>
-        <add as="fontStyle" value="1"/>
-        <add as="startSize" value="23"/>
-    </add>
     <add as="group">
         <add as="verticalAlign" value="top"/>
         <add as="dashed" value="1"/>
@@ -61,17 +51,5 @@
         <add as="labelBackgroundColor" value="white"/>
         <add as="verticalAlign" value="top"/>
         <add as="spacingTop" value="8"/>
-    </add>
-    <add as="image">
-        <add as="shape" value="image"/>
-        <add as="labelBackgroundColor" value="white"/>
-        <add as="verticalLabelPosition" value="bottom"/>
-        <add as="verticalAlign" value="top"/>
-    </add>
-    <add as="roundImage" extend="image">
-        <add as="perimeter" value="ellipsePerimeter"/>
-    </add>
-    <add as="rhombusImage" extend="image">
-        <add as="perimeter" value="rhombusPerimeter"/>
     </add>
 </mxStylesheet>

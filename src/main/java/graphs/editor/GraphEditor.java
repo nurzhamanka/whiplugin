@@ -1,7 +1,7 @@
 package graphs.editor;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.layout.*;
+import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.handler.mxRubberband;
 import com.mxgraph.swing.mxGraphComponent;
@@ -266,7 +266,7 @@ public class GraphEditor extends JPanel {
     
     @SuppressWarnings("serial")
     public Action bind(String name, final Action action) {
-        AbstractAction newAction = new AbstractAction(name) {
+        final AbstractAction newAction = new AbstractAction(name) {
             public void actionPerformed(ActionEvent e) {
                 action.actionPerformed(new ActionEvent(getGraphComponent(), e.getID(), e.getActionCommand()));
             }
@@ -280,11 +280,11 @@ public class GraphEditor extends JPanel {
     }
     
     public void updateTitle() {
-        JFrame frame = (JFrame) SwingUtilities.windowForComponent(this);
+        final JFrame frame = (JFrame) SwingUtilities.windowForComponent(this);
         
         if (frame != null) {
             String title = (currentFile != null) ? currentFile
-                    .getAbsolutePath() : "New Diagram";
+                    .getAbsolutePath() : "New Pipeline";
             
             if (modified) {
                 title += "*";
@@ -373,59 +373,11 @@ public class GraphEditor extends JPanel {
             mxGraph graph = graphComponent.getGraph();
             
             switch (ident) {
-                case "verticalHierarchical":
+                case "Vertical Hierarchy":
                     layout = new mxHierarchicalLayout(graph);
                     break;
-                case "horizontalHierarchical":
+                case "Horizontal Hierarchy":
                     layout = new mxHierarchicalLayout(graph, JLabel.WEST);
-                    break;
-                case "verticalTree":
-                    layout = new mxCompactTreeLayout(graph, false);
-                    break;
-                case "horizontalTree":
-                    layout = new mxCompactTreeLayout(graph, true);
-                    break;
-                case "parallelEdges":
-                    layout = new mxParallelEdgeLayout(graph);
-                    break;
-                case "placeEdgeLabels":
-                    layout = new mxEdgeLabelLayout(graph);
-                    break;
-                case "organicLayout":
-                    layout = new mxOrganicLayout(graph);
-                    break;
-            }
-            switch (ident) {
-                case "verticalPartition":
-                    layout = new mxPartitionLayout(graph, false) {
-                        public mxRectangle getContainerSize() {
-                            return graphComponent.getLayoutAreaSize();
-                        }
-                    };
-                    break;
-                case "horizontalPartition":
-                    layout = new mxPartitionLayout(graph, true) {
-                        public mxRectangle getContainerSize() {
-                            return graphComponent.getLayoutAreaSize();
-                        }
-                    };
-                    break;
-                case "verticalStack":
-                    layout = new mxStackLayout(graph, false) {
-                        public mxRectangle getContainerSize() {
-                            return graphComponent.getLayoutAreaSize();
-                        }
-                    };
-                    break;
-                case "horizontalStack":
-                    layout = new mxStackLayout(graph, true) {
-                        public mxRectangle getContainerSize() {
-                            return graphComponent.getLayoutAreaSize();
-                        }
-                    };
-                    break;
-                case "circleLayout":
-                    layout = new mxCircleLayout(graph);
                     break;
             }
         }
