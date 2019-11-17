@@ -76,10 +76,6 @@ public class Binarize extends AbstractOp {
         log.info("--- inverting image...");
         outImg.forEach(p -> p.set(!p.get()));
     
-        // the monolayer should be mostly filled here
-        log.info("--- filling holes...");
-        outImg = (Img<BitType>) ops.morphology().fillHoles(outImg);
-
         /* use a legacy ROI manager to clean black artifacts */
         final RoiManager roiManager = new RoiManager(true);
         final ResultsTable rt = new ResultsTable();
@@ -166,16 +162,25 @@ public class Binarize extends AbstractOp {
             }
             final Roi antiWound = roiManager.getRoi(maxIndex).getInverse(imp);
             assert (antiWound != null);
-            ip2 = antiWound.getMask();
-            ip2.invert();
+            ip2.setRoi(antiWound);
+            ip2.setValue(0);
+            ip2.fill();
+            ip2.reset(ip2.getMask());
+            ip2.resetRoi();
+//            ip2 = antiWound.getMask();
+//            ip2.invert();
             log.info("--- wound extracted");
         } else {
             log.error("--- wound detection failed");
         }
+    
+        roiManager.reset();
+        rt.reset();
         
         final Img<UnsignedByteType> invImg = ImageJFunctions.wrap(new ImagePlus("Binarized (Clean)", ip2));
+    
         outImg = ops.convert().bit(invImg);
-        outImg = Dilation.dilate(outImg, strel3, 4);
+        outImg = Closing.close(outImg, strel3, 4);
         
         long endTime = System.currentTimeMillis();
         long fd = endTime - startTime;

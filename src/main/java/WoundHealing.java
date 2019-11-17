@@ -1,13 +1,9 @@
 import fiji.util.gui.GenericDialogPlus;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.plugin.ContrastEnhancer;
 import ij.process.ImageProcessor;
 import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.DefaultDataset;
-import net.imagej.ImageJ;
-import net.imagej.ImgPlus;
+import net.imagej.*;
 import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
@@ -39,6 +35,8 @@ public class WoundHealing extends DynamicCommand {
     @Parameter
     private ImageDisplayService imageDisplayService;
     @Parameter
+    private DatasetService datasetService;
+    @Parameter
     private OpService ops;
     @Parameter
     private LogService log;
@@ -52,6 +50,7 @@ public class WoundHealing extends DynamicCommand {
     private boolean isDoTiltCorrect;
     private boolean isSavePlots;
     private int threshold;
+    
     
     @SuppressWarnings("unchecked")
     public void run() {
@@ -96,16 +95,14 @@ public class WoundHealing extends DynamicCommand {
             dialogParams.addDirectoryField("Input root path", USER_DIR);
             dialogParams.addDirectoryField("Output root path", USER_DIR);
         }
-        dialogParams.addMessage("If checked, saves binary masks");
         dialogParams.addCheckbox("Save binary masks", true);
-        dialogParams.addMessage("If checked, saves perimeters");
         dialogParams.addCheckbox("Save outline", false);
         dialogParams.addMessage("If checked, overwrites already processed images. \nUncheck if you want to resume an aborted process.");
         dialogParams.addCheckbox("Overwrite processed data", true);
         dialogParams.addSlider("Threshold", 0, 255, 100, 1);
         dialogParams.addCheckbox("Tilt correction", false);
         dialogParams.addCheckbox("Save plots", false);
-        dialogParams.addHelp("https://github.com/nurzhamanka/whi-plugin");
+        dialogParams.addHelp("https://github.com/nurzhamanka/whiplugin");
         dialogParams.showDialog();
         if (dialogParams.wasOKed()) {
             // populate parameters
@@ -131,12 +128,33 @@ public class WoundHealing extends DynamicCommand {
         }
     }
     
-    private void processActiveDataset() {
-        // TODO: process the active dataset, produce a hyperstack
-//        final ImageStack processStack = new ImageStack((int) activeDataset.dimension(0), (int) activeDataset.dimension(1));
-//        final Dataset resultDataset = activeDataset.duplicateBlank();
-//
+    
+    @SuppressWarnings("unchecked")
+    private <T extends RealType<T>> void processActiveDataset() {
+        
+        final ImagePlus activeImagePlus = ImageJFunctions.wrap((Img<T>) activeDataset.getImgPlus().getImg(), "Active dataset");
+        final ImagePlus processImage;
+        if (activeImagePlus.isStack() || activeImagePlus.isHyperStack()) {
+            log.info("Active dataset is a stack...");
+            final ImageStack processStack = new ImageStack(activeImagePlus.getWidth(), activeImagePlus.getHeight());
+            final ImageStack stack = activeImagePlus.getStack();
+            final int stackSize = stack.getSize();
+            for (int i = 1; i <= stackSize; i++) {
+                final Img<T> sliceImg = ImageJFunctions.wrapReal(new ImagePlus("Slice " + i, stack.getProcessor(i)));
+                final Img<T> sliceImgProcessed = process(sliceImg);
+                final ImageProcessor ip = ImageJFunctions.wrapBit(sliceImgProcessed, "Slice " + i + " processed").getProcessor();
+                processStack.addSlice("Slice " + i, ip);
+            }
+            processImage = new ImagePlus(activeDataset.getName() + " (processed)", processStack);
+        } else {
+            log.info("Active dataset is a single image...");
+            final Dataset processedDataset = process(activeDataset);
+            processImage = ImageJFunctions.wrap((Img<T>) processedDataset.getImgPlus().getImg(),
+                    activeDataset.getName() + " (processed)");
+        }
+        processImage.show();
     }
+    
     
     private void processDirectory() {
         
@@ -206,6 +224,7 @@ public class WoundHealing extends DynamicCommand {
         }
     }
     
+    
     @SuppressWarnings("unchecked")
     private Dataset process(final Dataset dataset) {
         
@@ -219,40 +238,40 @@ public class WoundHealing extends DynamicCommand {
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
         
         // TODO: move all the stack forming into ProcessActiveDataset
-        
-        final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
+
+//        final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
         
         // convert to a DoubleType Img
         Img<DoubleType> img = ops.convert().float64(image);
         
         // normalize to [0, 1]
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("1. Original Image", makeSlice(img));
+
+//        processStack.addSlice("1. Original Image", makeSlice(img));
         
         // square each pixel
         img = (Img<DoubleType>) ops.run(SquareImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("2. Squared Image", makeSlice(img));
+
+//        processStack.addSlice("2. Squared Image", makeSlice(img));
         
         // difference of Gaussians
         img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2, 1);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("3. DoG", makeSlice(img));
+
+//        processStack.addSlice("3. DoG", makeSlice(img));
         
         // hybrid filter
         img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 9);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("4. Hybrid Filter", makeSlice(img));
+
+//        processStack.addSlice("4. Hybrid Filter", makeSlice(img));
         
         // TopHat morphology filtering
         img = (Img<DoubleType>) ops.run(TophatImage.class, img);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("5. Top Hat", makeSlice(img));
+
+//        processStack.addSlice("5. Top Hat", makeSlice(img));
 
 //        // local entropy filtering
 //        img = (Img<DoubleType>) ops.run(ops.LocalEntropyFilter.class, img, 3);
@@ -267,23 +286,23 @@ public class WoundHealing extends DynamicCommand {
         // average filter
         img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 19);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
-        
-        processStack.addSlice("8. Mean Smoothing", makeSlice(img));
+
+//        processStack.addSlice("8. Mean Smoothing", makeSlice(img));
         
         // get the binary mask
         final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
         img = ops.convert().float64(binImg);
-        
-        processStack.addSlice("9. Binary Mask", makeSlice(img));
-        
-        final ImagePlus processImage = new ImagePlus("Process", processStack);
-        processImage.getProcessor().convertToByte(true);
-        final ContrastEnhancer ch = new ContrastEnhancer();
-        for (int i = 1; i <= processImage.getStack().getSize(); i++) {
-            final ImageProcessor ip = processImage.getStack().getProcessor(i);
-            ch.equalize(ip);
-        }
-        processImage.show();
+
+//        processStack.addSlice("9. Binary Mask", makeSlice(img));
+
+//        final ImagePlus processImage = new ImagePlus("Process", processStack);
+//        processImage.getProcessor().convertToByte(true);
+//        final ContrastEnhancer ch = new ContrastEnhancer();
+//        for (int i = 1; i <= processImage.getStack().getSize(); i++) {
+//            final ImageProcessor ip = processImage.getStack().getProcessor(i);
+//            ch.equalize(ip);
+//        }
+//        processImage.show();
         
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0, 255);
         return (Img<T>) ops.convert().uint8(img);
