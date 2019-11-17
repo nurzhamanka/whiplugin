@@ -48,12 +48,15 @@ public class WoundHealing extends DynamicCommand {
     private File inputDir, outputDir;
     private boolean isSaveBinMask;
     private boolean isSaveOutline;
+    private boolean isOverwrite;
     private boolean isDoTiltCorrect;
     private boolean isSavePlots;
     private int threshold;
     
     @SuppressWarnings("unchecked")
     public void run() {
+    
+        log.setLevel("DatasetIOService", 0);
         
         activeDataset = imageDisplayService.getActiveDataset();
         if (activeDataset != null) {
@@ -93,8 +96,12 @@ public class WoundHealing extends DynamicCommand {
             dialogParams.addDirectoryField("Input root path", USER_DIR);
             dialogParams.addDirectoryField("Output root path", USER_DIR);
         }
+        dialogParams.addMessage("If checked, saves binary masks");
         dialogParams.addCheckbox("Save binary masks", true);
+        dialogParams.addMessage("If checked, saves perimeters");
         dialogParams.addCheckbox("Save outline", false);
+        dialogParams.addMessage("If checked, overwrites already processed images. \nUncheck if you want to resume an aborted process.");
+        dialogParams.addCheckbox("Overwrite processed data", true);
         dialogParams.addSlider("Threshold", 0, 255, 100, 1);
         dialogParams.addCheckbox("Tilt correction", false);
         dialogParams.addCheckbox("Save plots", false);
@@ -108,10 +115,14 @@ public class WoundHealing extends DynamicCommand {
                 if (!inputDir.isDirectory() || !outputDir.isDirectory()) {
                     cancel("Input and output paths must be directories");
                     return;
+                } else if (inputDir.equals(outputDir)) {
+                    cancel("Input and output paths must be different directories");
+                    return;
                 }
             }
             isSaveBinMask = dialogParams.getNextBoolean();
             isSaveOutline = dialogParams.getNextBoolean();
+            isOverwrite = dialogParams.getNextBoolean();
             threshold = (int) dialogParams.getNextNumber();
             isDoTiltCorrect = dialogParams.getNextBoolean();
             isSavePlots = dialogParams.getNextBoolean();
@@ -122,7 +133,9 @@ public class WoundHealing extends DynamicCommand {
     
     private void processActiveDataset() {
         // TODO: process the active dataset, produce a hyperstack
-        cancel("To be implemented...");
+//        final ImageStack processStack = new ImageStack((int) activeDataset.dimension(0), (int) activeDataset.dimension(1));
+//        final Dataset resultDataset = activeDataset.duplicateBlank();
+//
     }
     
     private void processDirectory() {
@@ -134,14 +147,31 @@ public class WoundHealing extends DynamicCommand {
             cancel("The dataset is empty");
             return;
         }
-        // TODO: save dataset in the same directory structure
         for (final File set : sets) {
             assert set.isDirectory();
-            final File[] inputImages = set.listFiles(f -> datasetIOService.canOpen(f.getAbsolutePath()));
+            final File saveDir = new File(outputDir.getAbsolutePath() + File.separator + set.getName());
+            log.info("CURRENT DIR: " + saveDir.getAbsolutePath());
+            if (!saveDir.mkdir()) {
+                log.info("Could not create " + saveDir.getAbsolutePath());
+                if (saveDir.exists()) log.info("--- this directory exists");
+                else {
+                    log.error("--- something went wrong, moving on to the next dataset...");
+                    continue;
+                }
+            }
+            final File[] inputImages = set.listFiles(pathname -> datasetIOService.canOpen(pathname.getAbsolutePath()));
             assert inputImages != null;
             if (inputImages.length == 0) continue;  // this particular dataset is empty, move on
             final List<Long> times = new ArrayList<>();  // primitive benchmarking
             for (final File image : inputImages) {
+    
+                // check if that image has been processed already
+                final File imgFile = new File(saveDir.getAbsolutePath() + File.separator + image.getName());
+                if (!isOverwrite && imgFile.exists()) {
+                    log.info("Image " + imgFile.getName() + " has been processed - skipping...");
+                    continue;
+                }
+                
                 final long startTime = System.currentTimeMillis();
                 log.info("Processing " + image.getName());
                 final String imgPath = image.getAbsolutePath();
@@ -158,7 +188,7 @@ public class WoundHealing extends DynamicCommand {
         
                 // save the image
                 try {
-                    datasetIOService.save(result, outputDir.toPath().resolve(image.getName()).toAbsolutePath().toString());
+                    datasetIOService.save(result, saveDir.getAbsolutePath() + File.separator + image.getName());
                 } catch (IOException e) {
                     log.error(e);
                     continue;
