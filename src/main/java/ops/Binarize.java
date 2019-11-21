@@ -54,6 +54,7 @@ public class Binarize extends AbstractOp {
         log.info("--- applying threshold");
         
         outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().mean(inImg).getRealDouble() / Math.PI));
+        // outImg = (Img<BitType>) ops.threshold().otsu(inImg);
     
         log.info("--- inverting image...");
         outImg.forEach(p -> p.set(!p.get()));

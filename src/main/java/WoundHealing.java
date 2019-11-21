@@ -8,10 +8,10 @@ import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import ops.*;
+import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
@@ -40,6 +40,8 @@ public class WoundHealing extends DynamicCommand {
     private OpService ops;
     @Parameter
     private LogService log;
+    @Parameter
+    private StatusService statusService;
     
     /** PARAMETERS */
     private Dataset activeDataset;
@@ -51,10 +53,11 @@ public class WoundHealing extends DynamicCommand {
     private boolean isSavePlots;
     private int threshold;
     
+    /**  */
     
     @SuppressWarnings("unchecked")
     public void run() {
-    
+        
         log.setLevel("DatasetIOService", 0);
         
         activeDataset = imageDisplayService.getActiveDataset();
@@ -134,17 +137,20 @@ public class WoundHealing extends DynamicCommand {
         
         final ImagePlus activeImagePlus = ImageJFunctions.wrap((Img<T>) activeDataset.getImgPlus().getImg(), "Active dataset");
         final ImagePlus processImage;
+        statusService.showStatus("Processing the active dataset...");
         if (activeImagePlus.isStack() || activeImagePlus.isHyperStack()) {
             log.info("Active dataset is a stack...");
             final ImageStack processStack = new ImageStack(activeImagePlus.getWidth(), activeImagePlus.getHeight());
             final ImageStack stack = activeImagePlus.getStack();
             final int stackSize = stack.getSize();
             for (int i = 1; i <= stackSize; i++) {
+                statusService.showProgress(i - 1, stackSize);
                 final Img<T> sliceImg = ImageJFunctions.wrapReal(new ImagePlus("Slice " + i, stack.getProcessor(i)));
                 final Img<T> sliceImgProcessed = process(sliceImg);
-                final ImageProcessor ip = ImageJFunctions.wrapBit(sliceImgProcessed, "Slice " + i + " processed").getProcessor();
+                final ImageProcessor ip = ImageJFunctions.wrap(sliceImgProcessed, "Slice " + i + " processed").getProcessor();
                 processStack.addSlice("Slice " + i, ip);
             }
+            statusService.showProgress(stackSize, stackSize);
             processImage = new ImagePlus(activeDataset.getName() + " (processed)", processStack);
         } else {
             log.info("Active dataset is a single image...");
@@ -236,8 +242,6 @@ public class WoundHealing extends DynamicCommand {
     
     @SuppressWarnings("unchecked")
     private <T extends RealType<T>> Img<T> process(final Img<T> image) {
-        
-        // TODO: move all the stack forming into ProcessActiveDataset
 
 //        final ImageStack processStack = new ImageStack((int) image.dimension(0), (int) image.dimension(1));
         
@@ -288,10 +292,10 @@ public class WoundHealing extends DynamicCommand {
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
 
 //        processStack.addSlice("8. Mean Smoothing", makeSlice(img));
-        
-        // get the binary mask
-        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
-        img = ops.convert().float64(binImg);
+
+//        // get the binary mask
+//        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
+//        img = ops.convert().float64(binImg);
 
 //        processStack.addSlice("9. Binary Mask", makeSlice(img));
 
