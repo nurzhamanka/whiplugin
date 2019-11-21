@@ -20,10 +20,10 @@ public class Palette extends JPanel {
     private static final long serialVersionUID = 7771113885935187066L;
     protected JLabel selectedEntry = null;
     protected mxEventSource eventSource = new mxEventSource(this);
-    protected Color gradientColor = new Color(117, 195, 173);
+    protected Color gradientColor = new Color(122, 143, 155);
     @SuppressWarnings("serial")
     public Palette() {
-        setBackground(new Color(149, 230, 190));
+        setBackground(new Color(122, 143, 155));
         setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
         
         // Clears the current selection when the background is clicked
@@ -61,9 +61,8 @@ public class Palette extends JPanel {
             }
             
             Graphics2D g2 = (Graphics2D) g;
-            
-            g2.setPaint(new GradientPaint(0, 0, getBackground(), getWidth(), 0,
-                    gradientColor));
+    
+            g2.setPaint(new GradientPaint(0, 0, getBackground(), getWidth(), 0, gradientColor));
             g2.fill(rect);
         }
     }
@@ -154,13 +153,10 @@ public class Palette extends JPanel {
         });
         
         // Install the handler for dragging nodes into a graph
-        DragGestureListener dragGestureListener = e -> e
-                .startDrag(null, mxSwingConstants.EMPTY_IMAGE, new Point(),
-                        t, null);
+        DragGestureListener dragGestureListener = e -> e.startDrag(null, mxSwingConstants.EMPTY_IMAGE, new Point(), t, null);
         
         DragSource dragSource = new DragSource();
-        dragSource.createDefaultDragGestureRecognizer(entry,
-                DnDConstants.ACTION_COPY, dragGestureListener);
+        dragSource.createDefaultDragGestureRecognizer(entry, DnDConstants.ACTION_COPY, dragGestureListener);
         
         add(entry);
     }
