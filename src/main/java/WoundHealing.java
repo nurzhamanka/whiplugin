@@ -3,17 +3,22 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
 import io.scif.services.DatasetIOService;
-import net.imagej.*;
+import net.imagej.Dataset;
+import net.imagej.DefaultDataset;
+import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
 import net.imagej.display.ImageDisplayService;
 import net.imagej.ops.OpService;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 import ops.*;
 import org.scijava.app.StatusService;
 import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
+import org.scijava.display.DisplayService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -35,7 +40,7 @@ public class WoundHealing extends DynamicCommand {
     @Parameter
     private ImageDisplayService imageDisplayService;
     @Parameter
-    private DatasetService datasetService;
+    private DisplayService displayService;
     @Parameter
     private OpService ops;
     @Parameter
@@ -57,8 +62,8 @@ public class WoundHealing extends DynamicCommand {
     
     @SuppressWarnings("unchecked")
     public void run() {
-        
-        log.setLevel("DatasetIOService", 0);
+    
+        log.setLevel(0);
         
         activeDataset = imageDisplayService.getActiveDataset();
         if (activeDataset != null) {
@@ -97,14 +102,10 @@ public class WoundHealing extends DynamicCommand {
         if (hasDirectory) {
             dialogParams.addDirectoryField("Input root path", USER_DIR);
             dialogParams.addDirectoryField("Output root path", USER_DIR);
+            dialogParams.addCheckbox("Save binary masks", true);
+            dialogParams.addMessage("If checked, overwrites already processed images. \nUncheck if you want to resume an aborted process.");
+            dialogParams.addCheckbox("Overwrite processed data", true);
         }
-        dialogParams.addCheckbox("Save binary masks", true);
-        dialogParams.addCheckbox("Save outline", false);
-        dialogParams.addMessage("If checked, overwrites already processed images. \nUncheck if you want to resume an aborted process.");
-        dialogParams.addCheckbox("Overwrite processed data", true);
-        dialogParams.addSlider("Threshold", 0, 255, 100, 1);
-        dialogParams.addCheckbox("Tilt correction", false);
-        dialogParams.addCheckbox("Save plots", false);
         dialogParams.addHelp("https://github.com/nurzhamanka/whiplugin");
         dialogParams.showDialog();
         if (dialogParams.wasOKed()) {
@@ -119,13 +120,9 @@ public class WoundHealing extends DynamicCommand {
                     cancel("Input and output paths must be different directories");
                     return;
                 }
+                isSaveBinMask = dialogParams.getNextBoolean();
+                isOverwrite = dialogParams.getNextBoolean();
             }
-            isSaveBinMask = dialogParams.getNextBoolean();
-            isSaveOutline = dialogParams.getNextBoolean();
-            isOverwrite = dialogParams.getNextBoolean();
-            threshold = (int) dialogParams.getNextNumber();
-            isDoTiltCorrect = dialogParams.getNextBoolean();
-            isSavePlots = dialogParams.getNextBoolean();
         } else {
             cancel("Plugin canceled by user");
         }
@@ -137,13 +134,13 @@ public class WoundHealing extends DynamicCommand {
         
         final ImagePlus activeImagePlus = ImageJFunctions.wrap((Img<T>) activeDataset.getImgPlus().getImg(), "Active dataset");
         final ImagePlus processImage;
-        statusService.showStatus("Processing the active dataset...");
         if (activeImagePlus.isStack() || activeImagePlus.isHyperStack()) {
             log.info("Active dataset is a stack...");
             final ImageStack processStack = new ImageStack(activeImagePlus.getWidth(), activeImagePlus.getHeight());
             final ImageStack stack = activeImagePlus.getStack();
             final int stackSize = stack.getSize();
             for (int i = 1; i <= stackSize; i++) {
+                statusService.showStatus("Processing the active dataset... (" + i + "/" + stackSize + ")");
                 statusService.showProgress(i - 1, stackSize);
                 final Img<T> sliceImg = ImageJFunctions.wrapReal(new ImagePlus("Slice " + i, stack.getProcessor(i)));
                 final Img<T> sliceImgProcessed = process(sliceImg);
@@ -154,10 +151,12 @@ public class WoundHealing extends DynamicCommand {
             processImage = new ImagePlus(activeDataset.getName() + " (processed)", processStack);
         } else {
             log.info("Active dataset is a single image...");
+            statusService.showStatus("Processing the active dataset...");
             final Dataset processedDataset = process(activeDataset);
             processImage = ImageJFunctions.wrap((Img<T>) processedDataset.getImgPlus().getImg(),
                     activeDataset.getName() + " (processed)");
         }
+        statusService.showStatus("Displaying the result...");
         processImage.show();
     }
     
@@ -171,6 +170,7 @@ public class WoundHealing extends DynamicCommand {
             cancel("The dataset is empty");
             return;
         }
+        int currentSetNumber = 1;
         for (final File set : sets) {
             assert set.isDirectory();
             final File saveDir = new File(outputDir.getAbsolutePath() + File.separator + set.getName());
@@ -183,10 +183,12 @@ public class WoundHealing extends DynamicCommand {
                     continue;
                 }
             }
+            statusService.showStatus("Processing:" + set.getName() + " (" + currentSetNumber + "/" + sets.length + ")");
             final File[] inputImages = set.listFiles(pathname -> datasetIOService.canOpen(pathname.getAbsolutePath()));
             assert inputImages != null;
             if (inputImages.length == 0) continue;  // this particular dataset is empty, move on
             final List<Long> times = new ArrayList<>();  // primitive benchmarking
+            int currentImageNumber = 0;
             for (final File image : inputImages) {
     
                 // check if that image has been processed already
@@ -195,7 +197,7 @@ public class WoundHealing extends DynamicCommand {
                     log.info("Image " + imgFile.getName() + " has been processed - skipping...");
                     continue;
                 }
-                
+                statusService.showProgress(currentImageNumber, inputImages.length);
                 final long startTime = System.currentTimeMillis();
                 log.info("Processing " + image.getName());
                 final String imgPath = image.getAbsolutePath();
@@ -209,24 +211,30 @@ public class WoundHealing extends DynamicCommand {
     
                 // process the image
                 final Dataset result = process(currentImage);
-        
-                // save the image
-                try {
-                    datasetIOService.save(result, saveDir.getAbsolutePath() + File.separator + image.getName());
-                } catch (IOException e) {
-                    log.error(e);
-                    continue;
+    
+                if (isSaveBinMask) {
+                    // save the binary mask
+                    try {
+                        datasetIOService.save(result, saveDir.getAbsolutePath() + File.separator + image.getName());
+                    } catch (IOException e) {
+                        log.error(e);
+                        continue;
+                    }
+                } else {
+                    displayService.createDisplay(currentImage.getName() + " (original)", currentImage);
+                    displayService.createDisplay(currentImage.getName() + " (processed)", result);
                 }
                 final long endTime = System.currentTimeMillis();
                 final long fd = endTime - startTime;
                 log.info(image.getName() + " saved. It took " + fd / 1000.0 + "s.");
                 times.add(fd);
-                return;
+                currentImageNumber++;
             }
             double sum = times.stream().mapToDouble(val -> val).sum();
             double average = times.stream().mapToDouble(val -> val).average().orElse(0.0);
             log.info("Dataset processed in " + sum / 1000.0 + "s.");
             log.info("Average time per image is " + average / 1000.0 + "s.");
+            currentSetNumber++;
         }
     }
     
@@ -292,10 +300,10 @@ public class WoundHealing extends DynamicCommand {
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
 
 //        processStack.addSlice("8. Mean Smoothing", makeSlice(img));
-
-//        // get the binary mask
-//        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
-//        img = ops.convert().float64(binImg);
+    
+        // get the binary mask
+        final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img);
+        img = ops.convert().float64(binImg);
 
 //        processStack.addSlice("9. Binary Mask", makeSlice(img));
 
