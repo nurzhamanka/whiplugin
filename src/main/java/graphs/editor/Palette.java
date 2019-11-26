@@ -4,8 +4,11 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.util.mxGraphTransferable;
 import com.mxgraph.swing.util.mxSwingConstants;
-import com.mxgraph.util.*;
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxEventSource;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
+import com.mxgraph.util.mxRectangle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,10 +23,10 @@ public class Palette extends JPanel {
     private static final long serialVersionUID = 7771113885935187066L;
     protected JLabel selectedEntry = null;
     protected mxEventSource eventSource = new mxEventSource(this);
-    protected Color gradientColor = new Color(122, 143, 155);
+    protected Color gradientColor = Color.WHITE;
     @SuppressWarnings("serial")
     public Palette() {
-        setBackground(new Color(122, 143, 155));
+        setBackground(Color.WHITE);
         setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
         
         // Clears the current selection when the background is clicked
@@ -86,24 +89,14 @@ public class Palette extends JPanel {
         eventSource.fireEvent(new mxEventObject(mxEvent.SELECT, "entry",
                 selectedEntry, "transferable", t, "previous", previous));
     }
+    
     public void setPreferredWidth(int width) {
         int cols = Math.max(1, width / 55);
         setPreferredSize(new Dimension(width,
                 (getComponentCount() * 55 / cols) + 30));
         revalidate();
     }
-    public void addEdgeTemplate(final String name, ImageIcon icon,
-                                String style, int width, int height, Object value) {
-        mxGeometry geometry = new mxGeometry(0, 0, width, height);
-        geometry.setTerminalPoint(new mxPoint(0, height), true);
-        geometry.setTerminalPoint(new mxPoint(width, 0), false);
-        geometry.setRelative(true);
-        
-        mxCell cell = new mxCell(value, geometry, style);
-        cell.setEdge(true);
-        
-        addTemplate(name, icon, cell);
-    }
+    
     public void addTemplate(final String name, ImageIcon icon, String style,
                             int width, int height, Object value) {
         mxCell cell = new mxCell(value, new mxGeometry(0, 0, width, height),
@@ -112,6 +105,7 @@ public class Palette extends JPanel {
         
         addTemplate(name, icon, cell);
     }
+    
     public void addTemplate(final String name, ImageIcon icon, mxCell cell) {
         mxRectangle bounds = (mxGeometry) cell.getGeometry().clone();
         final mxGraphTransferable t = new mxGraphTransferable(
