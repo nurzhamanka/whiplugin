@@ -373,10 +373,10 @@ public class GraphEditor extends JPanel {
             mxGraph graph = graphComponent.getGraph();
             
             switch (ident) {
-                case "Vertical Hierarchy":
+                case "Beautify (Vertical)":
                     layout = new mxHierarchicalLayout(graph);
                     break;
-                case "Horizontal Hierarchy":
+                case "Beautify (Horizontal)":
                     layout = new mxHierarchicalLayout(graph, JLabel.WEST);
                     break;
             }

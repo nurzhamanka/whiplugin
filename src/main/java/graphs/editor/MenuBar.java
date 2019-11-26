@@ -121,102 +121,102 @@ public class MenuBar extends JMenuBar {
         menu.addSeparator();
         
         menu.add(editor.bind("Actual size", mxGraphActions.getZoomActualAction()));
-        
-        // Creates the format menu
-        menu = add(new JMenu("Format"));
-        
-        populateFormatMenu(menu, editor);
-        
-        // Creates the shape menu
-        menu = add(new JMenu("Shape"));
-        
-        populateShapeMenu(menu, editor);
+
+//        // Creates the format menu
+//        menu = add(new JMenu("Format"));
+//
+//        populateFormatMenu(menu, editor);
+//
+//        // Creates the shape menu
+//        menu = add(new JMenu("Shape"));
+//
+//        populateShapeMenu(menu, editor);
         
         // Creates the diagram menu
-        menu = add(new JMenu("Diagram"));
-        
-        submenu = (JMenu) menu.add(new JMenu("Background"));
-        
-        submenu.add(editor.bind("BG color", new BackgroundAction()));
-        submenu.add(editor.bind("BG image", new BackgroundImageAction()));
-        
-        submenu = (JMenu) menu.add(new JMenu("Layout"));
+        menu = add(new JMenu("Layout"));
+
+//        submenu = (JMenu) menu.add(new JMenu("Background"));
+//
+//        submenu.add(editor.bind("BG color", new BackgroundAction()));
+//        submenu.add(editor.bind("BG image", new BackgroundImageAction()));
+//
+//        submenu = (JMenu) menu.add(new JMenu("Layout"));
     
-        submenu.add(editor.graphLayout("Vertical Hierarchy", true));
-        submenu.add(editor.graphLayout("Horizontal Hierarchy", true));
-        
-        submenu = (JMenu) menu.add(new JMenu("Style"));
-        
-        submenu.add(editor.bind("Basic", new StylesheetAction("/graphs/style/basic-style.xml")));
-        submenu.add(editor.bind("Default", new StylesheetAction("/graphs/style/default-style.xml")));
-        
-        // Creates the options menu
-        menu = add(new JMenu("Options"));
-        
-        submenu = (JMenu) menu.add(new JMenu("Display"));
-        submenu.add(new TogglePropertyItem(graphComponent, "Buffering", "TripleBuffered", true));
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Prefer page size", "PreferPageSize", true, e -> graphComponent.zoomAndCenter()));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.bind("Tolerance", new PromptPropertyAction(graphComponent, "Tolerance")));
-        
-        submenu.add(editor.bind("Dirty", new ToggleDirtyAction()));
-        
-        submenu = (JMenu) menu.add(new JMenu("Zoom"));
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Center Zoom", "CenterZoom", true));
-        submenu.add(new TogglePropertyItem(graphComponent, "Zoom to Selection", "KeepSelectionVisibleOnZoom", true));
-        
-        submenu.addSeparator();
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Center page", "CenterPage", true, e -> {
-            if (graphComponent.isPageVisible() && graphComponent.isCenterPage()) {
-                graphComponent.zoomAndCenter();
-            }
-        }));
-        
-        menu.addSeparator();
-        
-        submenu = (JMenu) menu.add(new JMenu("Drag & Drop"));
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Drag enabled", "DragEnabled"));
-        submenu.add(new TogglePropertyItem(graph, "Drop enabled", "DropEnabled"));
-        
-        submenu.addSeparator();
-        
-        submenu.add(new TogglePropertyItem(graphComponent.getGraphHandler(), "Image preview", "ImagePreview"));
-        
-        submenu = (JMenu) menu.add(new JMenu("Labels"));
-        
-        submenu.add(new TogglePropertyItem(graph, "HTML labels", "HtmlLabels", true));
-        submenu.add(new TogglePropertyItem(graph, "Show labels", "LabelsVisible", true));
-        
-        submenu.addSeparator();
-        
-        submenu.add(new TogglePropertyItem(graph, "Move edge labels", "EdgeLabelsMovable"));
-        submenu.add(new TogglePropertyItem(graph, "Move vertex labels", "VertexLabelsMovable"));
-        
-        submenu.addSeparator();
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Handle Return?", "EnterStopsCellEditing"));
-        
-        menu.addSeparator();
-        
-        submenu = (JMenu) menu.add(new JMenu("Connections"));
-        
-        submenu.add(new TogglePropertyItem(graphComponent, "Connectable", "Connectable"));
-        submenu.add(new TogglePropertyItem(graph, "Connectable edges", "ConnectableEdges"));
-        
-        submenu.addSeparator();
-        
-        submenu.add(new ToggleCreateTargetItem(editor, "Create target"));
-        submenu.add(new TogglePropertyItem(graph, "Disconnect on move", "DisconnectOnMove"));
-        
-        submenu.addSeparator();
-        
-        submenu.add(editor.bind("Connect mode", new ToggleConnectModeAction()));
+        menu.add(editor.graphLayout("Beautify (Vertical)", true));
+        menu.add(editor.graphLayout("Beautify (Horizontal)", true));
+
+//        submenu = (JMenu) menu.add(new JMenu("Style"));
+//
+//        submenu.add(editor.bind("Basic", new StylesheetAction("/graphs/style/basic-style.xml")));
+//        submenu.add(editor.bind("Default", new StylesheetAction("/graphs/style/default-style.xml")));
+//
+//        // Creates the options menu
+//        menu = add(new JMenu("Options"));
+//
+//        submenu = (JMenu) menu.add(new JMenu("Display"));
+//        submenu.add(new TogglePropertyItem(graphComponent, "Buffering", "TripleBuffered", true));
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Prefer page size", "PreferPageSize", true, e -> graphComponent.zoomAndCenter()));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(editor.bind("Tolerance", new PromptPropertyAction(graphComponent, "Tolerance")));
+//
+//        submenu.add(editor.bind("Dirty", new ToggleDirtyAction()));
+//
+//        submenu = (JMenu) menu.add(new JMenu("Zoom"));
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Center Zoom", "CenterZoom", true));
+//        submenu.add(new TogglePropertyItem(graphComponent, "Zoom to Selection", "KeepSelectionVisibleOnZoom", true));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Center page", "CenterPage", true, e -> {
+//            if (graphComponent.isPageVisible() && graphComponent.isCenterPage()) {
+//                graphComponent.zoomAndCenter();
+//            }
+//        }));
+//
+//        menu.addSeparator();
+//
+//        submenu = (JMenu) menu.add(new JMenu("Drag & Drop"));
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Drag enabled", "DragEnabled"));
+//        submenu.add(new TogglePropertyItem(graph, "Drop enabled", "DropEnabled"));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(new TogglePropertyItem(graphComponent.getGraphHandler(), "Image preview", "ImagePreview"));
+//
+//        submenu = (JMenu) menu.add(new JMenu("Labels"));
+//
+//        submenu.add(new TogglePropertyItem(graph, "HTML labels", "HtmlLabels", true));
+//        submenu.add(new TogglePropertyItem(graph, "Show labels", "LabelsVisible", true));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(new TogglePropertyItem(graph, "Move edge labels", "EdgeLabelsMovable"));
+//        submenu.add(new TogglePropertyItem(graph, "Move vertex labels", "VertexLabelsMovable"));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Handle Return?", "EnterStopsCellEditing"));
+//
+//        menu.addSeparator();
+//
+//        submenu = (JMenu) menu.add(new JMenu("Connections"));
+//
+//        submenu.add(new TogglePropertyItem(graphComponent, "Connectable", "Connectable"));
+//        submenu.add(new TogglePropertyItem(graph, "Connectable edges", "ConnectableEdges"));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(new ToggleCreateTargetItem(editor, "Create target"));
+//        submenu.add(new TogglePropertyItem(graph, "Disconnect on move", "DisconnectOnMove"));
+//
+//        submenu.addSeparator();
+//
+//        submenu.add(editor.bind("Connect mode", new ToggleConnectModeAction()));
     }
     public static void populateShapeMenu(JMenu menu, GraphEditor editor) {
         
