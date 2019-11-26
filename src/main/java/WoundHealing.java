@@ -69,16 +69,16 @@ public class WoundHealing extends DynamicCommand {
         if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
             dialogActiveDataset.addMessage("Do you want to process the active dataset?");
-            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whi-plugin");
+            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whiplugin");
             dialogActiveDataset.showDialog();
             if (dialogActiveDataset.wasOKed()) {
-                populateParams(false);
-                if (isCanceled()) return;
+//                populateParams(false);
+//                if (isCanceled()) return;
                 processActiveDataset();
             } else {
                 final GenericDialogPlus dialogDirectory = new GenericDialogPlus(PLUGIN_NAME);
                 dialogDirectory.addMessage("Do you want to process a directory instead?");
-                dialogDirectory.addHelp("https://github.com/nurzhamanka/whi-plugin");
+                dialogDirectory.addHelp("https://github.com/nurzhamanka/whiplugin");
                 dialogDirectory.showDialog();
                 if (dialogDirectory.wasOKed()) {
                     populateParams(true);
