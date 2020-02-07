@@ -1,5 +1,7 @@
 package graphs.editor;
 
+import com.mxgraph.io.mxCodecRegistry;
+import com.mxgraph.io.mxObjectCodec;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.util.mxGraphTransferable;
@@ -9,6 +11,7 @@ import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxRectangle;
+import graphs.model.Operation;
 
 import javax.swing.*;
 import java.awt.*;
@@ -97,6 +100,21 @@ public class Palette extends JPanel {
         revalidate();
     }
     
+    public void addOperation(final String name, ImageIcon icon, String style,
+                             int width, int height, Operation opObject) {
+        mxCodecRegistry.addPackage(opObject.getClass().getPackage().toString());
+        try {
+            mxCodecRegistry.register(new mxObjectCodec(opObject.getClass().newInstance()));
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        
+        mxCell cell = new mxCell(opObject, new mxGeometry(0, 0, width, height),
+                style);
+        cell.setVertex(true);
+        addTemplate(name, icon, cell);
+    }
+    
     public void addTemplate(final String name, ImageIcon icon, String style,
                             int width, int height, Object value) {
         mxCell cell = new mxCell(value, new mxGeometry(0, 0, width, height),
@@ -108,14 +126,12 @@ public class Palette extends JPanel {
     
     public void addTemplate(final String name, ImageIcon icon, mxCell cell) {
         mxRectangle bounds = (mxGeometry) cell.getGeometry().clone();
-        final mxGraphTransferable t = new mxGraphTransferable(
-                new Object[]{cell}, bounds);
+        final mxGraphTransferable t = new mxGraphTransferable(new Object[]{cell}, bounds);
         
         // Scales the image if it's too large for the library
         if (icon != null) {
             if (icon.getIconWidth() > 32 || icon.getIconHeight() > 32) {
-                icon = new ImageIcon(icon.getImage().getScaledInstance(32, 32,
-                        0));
+                icon = new ImageIcon(icon.getImage().getScaledInstance(32, 32, 0));
             }
         }
         
@@ -143,7 +159,6 @@ public class Palette extends JPanel {
             }
             public void mouseReleased(MouseEvent e) {
             }
-            
         });
         
         // Install the handler for dragging nodes into a graph

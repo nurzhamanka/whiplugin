@@ -43,6 +43,7 @@ public class GraphEditor extends JPanel {
         
         // Stores a reference to the graph and creates the command history
         graphComponent = component;
+        graphComponent.setAutoExtend(true);
         final mxGraph graph = graphComponent.getGraph();
         
         undoManager = createUndoManager();
@@ -184,14 +185,12 @@ public class GraphEditor extends JPanel {
     }
     
     protected void installListeners() {
-        // Installs mouse wheel listener for zooming
-        MouseWheelListener wheelTracker = e -> {
+        // zooming
+        graphComponent.addMouseWheelListener(e -> {
             if (e.getSource() instanceof mxGraphOutline || e.isControlDown()) {
                 GraphEditor.this.mouseWheelMoved(e);
             }
-        };
-        
-        graphComponent.addMouseWheelListener(wheelTracker);
+        });
         
         // Installs the popup menu in the graph component
         graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {

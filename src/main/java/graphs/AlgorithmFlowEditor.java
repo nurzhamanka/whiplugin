@@ -17,6 +17,7 @@ import com.mxgraph.view.mxGraph;
 import graphs.editor.GraphEditor;
 import graphs.editor.MenuBar;
 import graphs.editor.Palette;
+import graphs.model.Operation;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
@@ -58,18 +59,14 @@ public class AlgorithmFlowEditor extends GraphEditor {
         });
         
         // Adds some template cells for dropping into the graph
-        nodesPalette.addTemplate(
-                "Operation",
+        nodesPalette.addOperation(
+                "Square",
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100, "Operation");
-        nodesPalette.addTemplate(
-                "Join",
-                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rhombus.png")),
-                "rhombus", 50, 50, "Join");
-        nodesPalette.addTemplate(
-                "Fork",
-                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rounded.png")),
-                "ellipse", 50, 50, "Fork");
+                null, 100, 100, new Operation("Square"));
+        nodesPalette.addOperation(
+                "TopHat",
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100, new Operation("TopHat"));
     }
     
     public static class CustomGraphComponent extends mxGraphComponent {
