@@ -1,5 +1,6 @@
 package graphs.editor;
 
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.util.mxGraphActions;
 
 import javax.swing.*;
@@ -10,6 +11,8 @@ public class PopupMenu extends JPopupMenu {
     public PopupMenu(GraphEditor editor) {
         boolean selected = !editor.getGraphComponent().getGraph()
                 .isSelectionEmpty();
+    
+        boolean nodeSelected = editor.getGraphComponent().getGraph().getSelectionCount() == 1 && ((mxCell) editor.getGraphComponent().getGraph().getSelectionCell()).isVertex();
         
         add(editor.bind("Cut", TransferHandler.getCutAction())).setEnabled(selected);
         
@@ -18,6 +21,8 @@ public class PopupMenu extends JPopupMenu {
         add(editor.bind("Paste", TransferHandler.getPasteAction()));
         
         add(editor.bind("Delete", mxGraphActions.getDeleteAction())).setEnabled(selected);
+    
+        add(editor.bind("Properties", new Actions.PropertiesAction())).setEnabled(nodeSelected);
     }
     
 }
