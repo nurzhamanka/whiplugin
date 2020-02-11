@@ -15,13 +15,14 @@ import graphs.editor.GraphEditor;
 import graphs.editor.MenuBar;
 import graphs.editor.Palette;
 import graphs.model.DoGaussOp;
+import graphs.model.Operation;
 import graphs.model.SquareOp;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Field;
 import java.text.NumberFormat;
+import java.util.Map;
 
 @SuppressWarnings("ALL")
 public class AlgorithmFlowEditor extends GraphEditor {
@@ -125,15 +126,18 @@ public class AlgorithmFlowEditor extends GraphEditor {
         /* information displayed when the mouse cursor is hovering on the cell */
         public String getToolTipForCell(Object cell) {
             if (getModel().isEdge(cell)) {
+                // edges don't carry business logic information
                 return null;
             } else {
-                StringBuilder toolTip = new StringBuilder();
-                Object operation = ((mxCell) cell).getValue();
-                Class clazz = operation.getClass();
-                Field[] fields = clazz.getFields();
-                // TODO: extract all getters using Reflection and construct a list of key-value pairs
+                StringBuilder toolTip = new StringBuilder("<html>");
+                Operation operation = (Operation) ((mxCell) cell).getValue();
+                Map<String, String> pairs = operation.getKeyValuePairs();
+                pairs.forEach((k, v) -> {
+                    toolTip.append(k).append(" = ").append(v).append("<br>");
+                });
+                toolTip.append("</html>");
                 // TODO: convert the string to HTML using Apache Commons
-                return "WIP";
+                return toolTip.toString();
             }
         }
     

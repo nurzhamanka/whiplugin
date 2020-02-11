@@ -1,6 +1,8 @@
 package graphs.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Operation implements Serializable {
     
@@ -29,6 +31,13 @@ public abstract class Operation implements Serializable {
     
     public void setType(OpType type) {
         this.type = type;
+    }
+    
+    public Map<String, String> getKeyValuePairs() {
+        Map<String, String> map = new HashMap<>();
+        map.put("name", name);
+        map.put("type", type.toString());
+        return map;
     }
     
     @Override

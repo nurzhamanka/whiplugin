@@ -1,5 +1,7 @@
 package graphs.model;
 
+import java.util.Map;
+
 public class DoGaussOp extends Operation {
     
     private double sigma1;
@@ -31,6 +33,14 @@ public class DoGaussOp extends Operation {
     
     public void setSigma2(double sigma2) {
         this.sigma2 = sigma2;
+    }
+    
+    @Override
+    public Map<String, String> getKeyValuePairs() {
+        Map<String, String> map = super.getKeyValuePairs();
+        map.put("sigma1", String.valueOf(sigma1));
+        map.put("sigma2", String.valueOf(sigma2));
+        return map;
     }
     
     @Override
