@@ -16,7 +16,6 @@ import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
-import graphs.model.Operation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
@@ -969,7 +968,7 @@ public class Actions {
             final mxGraphComponent graphComponent = (mxGraphComponent) e.getSource();
             final mxGraph graph = graphComponent.getGraph();
             final mxCell cell = (mxCell) graph.getSelectionCell();
-            final PropertiesDialog dialog = new PropertiesDialog((Operation) cell.getValue());
+            final PropertiesDialog dialog = new PropertiesDialog(cell, graph);
             final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             final Dimension frameSize = dialog.getSize();
             dialog.setLocation(screenSize.width / 2 - (frameSize.width / 2), screenSize.height / 2 - (frameSize.height / 2));

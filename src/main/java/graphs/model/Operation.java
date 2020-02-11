@@ -5,12 +5,14 @@ import java.io.Serializable;
 public class Operation implements Serializable {
     
     private String name;
+    private OpType type;
     
     public Operation() {
     }
     
-    public Operation(String name) {
+    public Operation(String name, OpType type) {
         this.name = name;
+        this.type = type;
     }
     
     public String getName() {
@@ -21,8 +23,16 @@ public class Operation implements Serializable {
         this.name = name;
     }
     
+    public OpType getType() {
+        return type;
+    }
+    
+    public void setType(OpType type) {
+        this.type = type;
+    }
+    
     @Override
     public String toString() {
-        return name;
+        return name + "\n" + type.toString();
     }
 }

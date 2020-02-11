@@ -17,6 +17,7 @@ import com.mxgraph.view.mxGraph;
 import graphs.editor.GraphEditor;
 import graphs.editor.MenuBar;
 import graphs.editor.Palette;
+import graphs.model.OpType;
 import graphs.model.Operation;
 import org.w3c.dom.Document;
 
@@ -62,11 +63,11 @@ public class AlgorithmFlowEditor extends GraphEditor {
         nodesPalette.addOperation(
                 "Square",
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100, new Operation("Square"));
+                null, 100, 100, new Operation("Square", OpType.SQUARE));
         nodesPalette.addOperation(
                 "TopHat",
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100, new Operation("TopHat"));
+                null, 100, 100, new Operation("TopHat", OpType.TOPHAT));
     }
     
     public static class CustomGraphComponent extends mxGraphComponent {
