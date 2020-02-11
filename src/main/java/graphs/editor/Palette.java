@@ -100,8 +100,8 @@ public class Palette extends JPanel {
         revalidate();
     }
     
-    public void addOperation(final String name, ImageIcon icon, String style,
-                             int width, int height, Operation opObject) {
+    public void addOperation(Operation opObject, ImageIcon icon, String style,
+                             int width, int height) {
         mxCodecRegistry.addPackage(opObject.getClass().getPackage().toString());
         try {
             mxCodecRegistry.register(new mxObjectCodec(opObject.getClass().newInstance()));
@@ -112,7 +112,7 @@ public class Palette extends JPanel {
         mxCell cell = new mxCell(opObject, new mxGeometry(0, 0, width, height),
                 style);
         cell.setVertex(true);
-        addTemplate(name, icon, cell);
+        addTemplate(opObject.getName(), icon, cell);
     }
     
     public void addTemplate(final String name, ImageIcon icon, String style,

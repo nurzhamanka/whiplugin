@@ -2,7 +2,6 @@ package graphs;
 
 import com.mxgraph.io.mxCodec;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.model.mxGeometry;
 import com.mxgraph.model.mxICell;
 import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.swing.mxGraphComponent;
@@ -10,21 +9,19 @@ import com.mxgraph.swing.util.mxGraphTransferable;
 import com.mxgraph.swing.util.mxSwingConstants;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
-import com.mxgraph.util.mxPoint;
 import com.mxgraph.util.mxUtils;
-import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 import graphs.editor.GraphEditor;
 import graphs.editor.MenuBar;
 import graphs.editor.Palette;
-import graphs.model.OpType;
-import graphs.model.Operation;
+import graphs.model.DoGaussOp;
+import graphs.model.SquareOp;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Field;
 import java.text.NumberFormat;
-import java.util.List;
 
 @SuppressWarnings("ALL")
 public class AlgorithmFlowEditor extends GraphEditor {
@@ -61,13 +58,13 @@ public class AlgorithmFlowEditor extends GraphEditor {
         
         // Adds some template cells for dropping into the graph
         nodesPalette.addOperation(
-                "Square",
+                new SquareOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100, new Operation("Square", OpType.SQUARE));
+                null, 100, 100);
         nodesPalette.addOperation(
-                "TopHat",
+                new DoGaussOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100, new Operation("TopHat", OpType.TOPHAT));
+                null, 100, 100);
     }
     
     public static class CustomGraphComponent extends mxGraphComponent {
@@ -127,63 +124,17 @@ public class AlgorithmFlowEditor extends GraphEditor {
     
         /* information displayed when the mouse cursor is hovering on the cell */
         public String getToolTipForCell(Object cell) {
-            StringBuilder tip = new StringBuilder("<html>");
-            mxGeometry geo = getModel().getGeometry(cell);
-            mxCellState state = getView().getState(cell);
-            
             if (getModel().isEdge(cell)) {
-                tip.append("points={");
-                
-                if (geo != null) {
-                    List<mxPoint> points = geo.getPoints();
-                    
-                    if (points != null) {
-                        
-                        for (mxPoint point : points) {
-                            tip.append("[x=").append(numberFormat.format(point.getX())).append(",y=").append(numberFormat.format(point.getY())).append("],");
-                        }
-                        
-                        tip = new StringBuilder(tip.substring(0, tip.length() - 1));
-                    }
-                }
-                
-                tip.append("}<br>");
-                tip.append("absPoints={");
-                
-                if (state != null) {
-                    
-                    for (int i = 0; i < state.getAbsolutePointCount(); i++) {
-                        mxPoint point = state.getAbsolutePoint(i);
-                        tip.append("[x=").append(numberFormat.format(point.getX())).append(",y=").append(numberFormat.format(point.getY())).append("],");
-                    }
-                    
-                    tip = new StringBuilder(tip.substring(0, tip.length() - 1));
-                }
-                
-                tip.append("}");
+                return null;
             } else {
-                tip.append("geo=[");
-                
-                if (geo != null) {
-                    tip.append("x=").append(numberFormat.format(geo.getX())).append(",y=").append(numberFormat.format(geo.getY())).append(",width=").append(numberFormat.format(geo.getWidth())).append(",height=").append(numberFormat.format(geo.getHeight()));
-                }
-                
-                tip.append("]<br>");
-                tip.append("state=[");
-                
-                if (state != null) {
-                    tip.append("x=").append(numberFormat.format(state.getX())).append(",y=").append(numberFormat.format(state.getY())).append(",width=").append(numberFormat.format(state.getWidth())).append(",height=").append(numberFormat.format(state.getHeight()));
-                }
-                
-                tip.append("]");
+                StringBuilder toolTip = new StringBuilder();
+                Object operation = ((mxCell) cell).getValue();
+                Class clazz = operation.getClass();
+                Field[] fields = clazz.getFields();
+                // TODO: extract all getters using Reflection and construct a list of key-value pairs
+                // TODO: convert the string to HTML using Apache Commons
+                return "WIP";
             }
-            
-            mxPoint trans = getView().getTranslate();
-            
-            tip.append("<br>scale=").append(numberFormat.format(getView().getScale())).append(", translate=[x=").append(numberFormat.format(trans.getX())).append(",y=").append(numberFormat.format(trans.getY())).append("]");
-            tip.append("</html>");
-            
-            return tip.toString();
         }
     
         @Override

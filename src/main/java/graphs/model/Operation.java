@@ -2,10 +2,10 @@ package graphs.model;
 
 import java.io.Serializable;
 
-public class Operation implements Serializable {
+public abstract class Operation implements Serializable {
     
-    private String name;
-    private OpType type;
+    protected String name;
+    protected OpType type;
     
     public Operation() {
     }
