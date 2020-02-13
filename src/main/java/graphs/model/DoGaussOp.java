@@ -15,8 +15,8 @@ public class DoGaussOp extends Operation {
     
     public DoGaussOp() {
         super("Difference of Gaussians", OpType.DOG);
-        this.sigma1 = 2;
-        this.sigma2 = 1;
+        sigma1 = 2;
+        sigma2 = 1;
     }
     
     public double getSigma1() {
@@ -45,6 +45,6 @@ public class DoGaussOp extends Operation {
     
     @Override
     public String toString() {
-        return String.format("%s\ns1 = %s, s2 = %s", super.toString(), sigma1, sigma2);
+        return String.format("%s\ns1 = %s\ns2 = %s", super.toString(), sigma1, sigma2);
     }
 }

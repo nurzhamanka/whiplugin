@@ -1,7 +1,7 @@
 package graphs.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class Operation implements Serializable {
@@ -34,7 +34,7 @@ public abstract class Operation implements Serializable {
     }
     
     public Map<String, String> getKeyValuePairs() {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new LinkedHashMap<>();
         map.put("name", name);
         map.put("type", type.toString());
         return map;
@@ -42,6 +42,6 @@ public abstract class Operation implements Serializable {
     
     @Override
     public String toString() {
-        return name + "\n" + type.toString();
+        return type.toString();
     }
 }

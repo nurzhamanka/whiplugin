@@ -136,7 +136,6 @@ public class AlgorithmFlowEditor extends GraphEditor {
                     toolTip.append(k).append(" = ").append(v).append("<br>");
                 });
                 toolTip.append("</html>");
-                // TODO: convert the string to HTML using Apache Commons
                 return toolTip.toString();
             }
         }
