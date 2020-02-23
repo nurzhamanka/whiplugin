@@ -43,7 +43,7 @@ public abstract class PropertiesDialog extends JDialog {
         cancelButton = new JButton("Cancel");
     }
     
-    protected void assembleDialog() {
+    final protected void assembleDialog() {
         
         buttonPanel.add(okButton);
         buttonPanel.add(cancelButton);

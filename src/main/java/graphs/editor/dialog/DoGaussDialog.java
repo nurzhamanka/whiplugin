@@ -18,13 +18,13 @@ public class DoGaussDialog extends PropertiesDialog {
     
     public DoGaussDialog(mxCell cell, mxGraph graph) {
         super(cell, graph);
+        gaussOp = (DoGaussOp) operation;
         populateFields();
         assembleDialog();
     }
     
     @Override
     protected void populateFields() {
-        gaussOp = (DoGaussOp) operation;
         
         sigmas[0] = gaussOp.getSigma1();
         sigmas[1] = gaussOp.getSigma2();

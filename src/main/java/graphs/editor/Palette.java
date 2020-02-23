@@ -115,15 +115,6 @@ public class Palette extends JPanel {
         addTemplate(opObject.getName(), icon, cell);
     }
     
-    public void addTemplate(final String name, ImageIcon icon, String style,
-                            int width, int height, Object value) {
-        mxCell cell = new mxCell(value, new mxGeometry(0, 0, width, height),
-                style);
-        cell.setVertex(true);
-        
-        addTemplate(name, icon, cell);
-    }
-    
     public void addTemplate(final String name, ImageIcon icon, mxCell cell) {
         mxRectangle bounds = (mxGeometry) cell.getGeometry().clone();
         final mxGraphTransferable t = new mxGraphTransferable(new Object[]{cell}, bounds);

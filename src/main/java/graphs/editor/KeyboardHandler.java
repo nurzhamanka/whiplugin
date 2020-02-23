@@ -2,7 +2,6 @@ package graphs.editor;
 
 import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.swing.util.mxGraphActions;
 
 import javax.swing.*;
 
@@ -21,10 +20,6 @@ public class KeyboardHandler extends mxKeyboardHandler {
             
             map.put(KeyStroke.getKeyStroke("control Z"), "undo");
             map.put(KeyStroke.getKeyStroke("control Y"), "redo");
-            map
-                    .put(KeyStroke.getKeyStroke("control shift V"),
-                            "selectVertices");
-            map.put(KeyStroke.getKeyStroke("control shift E"), "selectEdges");
         }
         
         return map;
@@ -38,8 +33,6 @@ public class KeyboardHandler extends mxKeyboardHandler {
         map.put("open", new Actions.OpenAction());
         map.put("undo", new Actions.HistoryAction(true));
         map.put("redo", new Actions.HistoryAction(false));
-        map.put("selectVertices", mxGraphActions.getSelectVerticesAction());
-        map.put("selectEdges", mxGraphActions.getSelectEdgesAction());
         
         return map;
     }

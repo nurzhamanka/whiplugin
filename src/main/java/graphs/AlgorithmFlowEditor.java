@@ -17,6 +17,7 @@ import graphs.editor.Palette;
 import graphs.model.DoGaussOp;
 import graphs.model.Operation;
 import graphs.model.SquareOp;
+import graphs.model.TopHatOp;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
@@ -64,6 +65,10 @@ public class AlgorithmFlowEditor extends GraphEditor {
                 null, 100, 100);
         nodesPalette.addOperation(
                 new DoGaussOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        nodesPalette.addOperation(
+                new TopHatOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 null, 100, 100);
     }
