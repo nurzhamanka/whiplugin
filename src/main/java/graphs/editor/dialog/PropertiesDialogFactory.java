@@ -7,8 +7,6 @@ import graphs.model.Operation;
 
 public class PropertiesDialogFactory {
     
-    // TODO: maybe leave this factory and get rid of inheritance, if it makes sense?
-    
     public static PropertiesDialog getDialog(mxCell cell, mxGraph graph) {
         Operation operation = (Operation) cell.getValue();
         OpType type = operation.getType();
@@ -18,6 +16,8 @@ public class PropertiesDialogFactory {
                 return new DoGaussDialog(cell, graph);
             case TOPHAT:
                 return new TopHatDialog(cell, graph);
+            case HYBRID:
+                return new HybridDialog(cell, graph);
             default:
                 return null;
         }

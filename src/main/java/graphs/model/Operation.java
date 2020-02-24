@@ -8,6 +8,7 @@ public abstract class Operation implements Serializable {
     
     protected String name;
     protected OpType type;
+    // todo: add icon style for the palette
     
     public Operation() {
     }

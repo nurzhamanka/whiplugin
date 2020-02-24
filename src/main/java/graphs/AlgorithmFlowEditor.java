@@ -14,10 +14,7 @@ import com.mxgraph.view.mxGraph;
 import graphs.editor.GraphEditor;
 import graphs.editor.MenuBar;
 import graphs.editor.Palette;
-import graphs.model.DoGaussOp;
-import graphs.model.Operation;
-import graphs.model.SquareOp;
-import graphs.model.TopHatOp;
+import graphs.model.*;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
@@ -69,6 +66,10 @@ public class AlgorithmFlowEditor extends GraphEditor {
                 null, 100, 100);
         nodesPalette.addOperation(
                 new TopHatOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        nodesPalette.addOperation(
+                new HybridOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 null, 100, 100);
     }

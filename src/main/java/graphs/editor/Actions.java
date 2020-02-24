@@ -946,4 +946,6 @@ public class Actions {
             dialog.setLocation(screenSize.width / 2 - (frameSize.width / 2), screenSize.height / 2 - (frameSize.height / 2));
         }
     }
+    
+    // todo: Action for packing the graph into a format that can be converted to ImageJ algorithms
 }
