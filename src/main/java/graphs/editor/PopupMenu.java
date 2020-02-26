@@ -7,6 +7,7 @@ import graphs.model.Operation;
 
 import javax.swing.*;
 
+
 public class PopupMenu extends JPopupMenu {
     private static final long serialVersionUID = -3132749140550242191L;
     
@@ -18,8 +19,7 @@ public class PopupMenu extends JPopupMenu {
     
         if (nodeSelected) {
             OpType type = ((Operation) ((mxCell) editor.getGraphComponent().getGraph().getSelectionCell()).getValue()).getType();
-        
-            canEdit = true;
+            canEdit = (type != OpType.SQUARE && type != OpType.NORMALIZE);
         } else {
             canEdit = false;
         }
