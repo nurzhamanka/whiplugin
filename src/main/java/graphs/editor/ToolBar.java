@@ -59,6 +59,10 @@ public class ToolBar extends JToolBar {
         zoomCombo.setMaximumSize(new Dimension(75, 100));
         zoomCombo.setMaximumRowCount(9);
         add(zoomCombo);
+    
+        addSeparator();
+    
+        add(editor.bind("RUN", mxGraphActions.getDeleteAction()));
         
         // Sets the zoom in the zoom combo the current value
         mxIEventListener scaleTracker = (sender, evt) -> {

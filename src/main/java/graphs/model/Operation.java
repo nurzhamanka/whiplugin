@@ -41,6 +41,10 @@ public abstract class Operation implements Serializable {
         return map;
     }
     
+    public boolean isValid() {
+        return true;
+    }
+    
     @Override
     public String toString() {
         return type.toString();

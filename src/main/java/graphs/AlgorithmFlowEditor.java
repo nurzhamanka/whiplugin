@@ -57,7 +57,11 @@ public class AlgorithmFlowEditor extends GraphEditor {
         
         // Adds some template cells for dropping into the graph
         nodesPalette.addOperation(
-                new SquareOp(),
+                new NormalizeOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        nodesPalette.addOperation(
+                new MathOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 null, 100, 100);
         nodesPalette.addOperation(
@@ -72,6 +76,15 @@ public class AlgorithmFlowEditor extends GraphEditor {
                 new HybridOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 null, 100, 100);
+        nodesPalette.addOperation(
+                new SmoothOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        nodesPalette.addOperation(
+                new BinarizeOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        
     }
     
     public static class CustomGraphComponent extends mxGraphComponent {

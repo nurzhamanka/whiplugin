@@ -19,7 +19,7 @@ public class PopupMenu extends JPopupMenu {
     
         if (nodeSelected) {
             OpType type = ((Operation) ((mxCell) editor.getGraphComponent().getGraph().getSelectionCell()).getValue()).getType();
-            canEdit = (type != OpType.SQUARE && type != OpType.NORMALIZE);
+            canEdit = (type != OpType.NORMALIZE);
         } else {
             canEdit = false;
         }
