@@ -12,6 +12,8 @@ public class PropertiesDialogFactory {
         OpType type = operation.getType();
         
         switch (type) {
+            case INPUT:
+                return new InputDialog(cell, graph);
             case DOG:
                 return new DoGaussDialog(cell, graph);
             case TOPHAT:

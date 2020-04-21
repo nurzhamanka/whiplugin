@@ -2,6 +2,7 @@ package graphs.editor;
 
 import com.mxgraph.analysis.StructuralException;
 import com.mxgraph.analysis.mxAnalysisGraph;
+import com.mxgraph.analysis.mxGraphProperties;
 import com.mxgraph.analysis.mxGraphStructure;
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
@@ -21,6 +22,8 @@ import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
 import graphs.editor.dialog.PropertiesDialog;
 import graphs.editor.dialog.PropertiesDialogFactory;
+import graphs.model.OpType;
+import graphs.model.Operation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
@@ -38,6 +41,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -957,22 +961,69 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             final mxGraphComponent graphComponent = (mxGraphComponent) e.getSource();
             final mxGraph graph = graphComponent.getGraph();
-            
-            // valid = connected + DAG + first node is input, last node is output
+    
+            // valid = connected + DAG + all sources are inputs, all sinks are outputs
             boolean isInvalidated = false;
             
             // init an analysis graph
             final mxAnalysisGraph aGraph = new mxAnalysisGraph();
             aGraph.setGraph(graph);
+            mxGraphProperties.setDirected(aGraph.getProperties(), true);
             
             boolean isConnected = mxGraphStructure.isConnected(aGraph);
-            boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
-            boolean isConnectedDag = isConnected && isDag;
+    
+            if (!isConnected) {
+                System.out.println("Graph not connected");
+            }
             
-            try {
-                mxCell[] sources = (mxCell[]) mxGraphStructure.getSourceVertices(aGraph);
-            } catch (StructuralException e1) {
-                e1.printStackTrace();
+            boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
+    
+            if (!isDag) {
+                System.out.println("Graph not a DAG");
+            }
+            
+            boolean isConnectedDag = isConnected && isDag;
+    
+            if (!isConnectedDag) isInvalidated = true;
+            else {
+                try {
+                    boolean areSourcesValid = true;
+                    mxCell[] sources = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
+                    for (mxCell source : sources) {
+                        Operation op = (Operation) source.getValue();
+                        if (op.getType() != OpType.INPUT) {
+                            areSourcesValid = false;
+                            break;
+                        }
+                    }
+                    if (!areSourcesValid) isInvalidated = true;
+                    else System.out.println("All sources are inputs");
+                } catch (StructuralException e1) {
+                    isInvalidated = true;
+                    e1.printStackTrace();
+                }
+
+//            try {
+//                boolean areSinksValid = true;
+//                mxCell[] sinks = (mxCell[]) mxGraphStructure.getSinkVertices(aGraph);
+//                for (mxCell sink: sinks) {
+//                    Operation op = (Operation) sink.getValue();
+//                    if (op.getType() != OpType.OUTPUT) {
+//                        areSinksValid = false;
+//                        break;
+//                    }
+//                }
+//                if (!areSinksValid) isInvalidated = true;
+//            } catch (StructuralException e1) {
+//                isInvalidated = true;
+//                e1.printStackTrace();
+//            }
+        
+                if (!isInvalidated) {
+                    System.out.println("Graph is valid!");
+                } else {
+                    System.out.println("Graph is invalid!");
+                }
             }
         }
     }

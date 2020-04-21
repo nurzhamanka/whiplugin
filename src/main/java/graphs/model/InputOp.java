@@ -1,6 +1,7 @@
 package graphs.model;
 
 import java.io.File;
+import java.util.Map;
 
 public class InputOp extends Operation {
     
@@ -9,6 +10,24 @@ public class InputOp extends Operation {
     
     public InputOp() {
         super("Input", OpType.INPUT);
+    }
+    
+    @Override
+    public Map<String, String> getKeyValuePairs() {
+        Map<String, String> map = super.getKeyValuePairs();
+        map.put("datasetName", datasetName != null ? datasetName : "None");
+        map.put("inputDirectory", inputDirectory != null ? inputDirectory.toString() : "None");
+        return map;
+    }
+    
+    @Override
+    public String toString() {
+        String str = super.toString();
+        if (datasetName != null)
+            str += String.format("\ndatasetName = %s", datasetName);
+        if (inputDirectory != null)
+            str += String.format("\ninputDir = %s", inputDirectory.toString());
+        return str;
     }
     
     public String getDatasetName() {
