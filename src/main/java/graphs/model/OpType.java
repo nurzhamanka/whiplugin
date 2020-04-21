@@ -9,5 +9,7 @@ public enum OpType {
     MEDIAN,
     MEAN,
     BINARIZE,
-    MATH
+    MATH,
+    INPUT,
+    OUTPUT
 }

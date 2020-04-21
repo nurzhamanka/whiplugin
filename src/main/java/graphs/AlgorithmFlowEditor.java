@@ -57,6 +57,10 @@ public class AlgorithmFlowEditor extends GraphEditor {
         
         // Adds some template cells for dropping into the graph
         nodesPalette.addOperation(
+                new InputOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
+                null, 100, 100);
+        nodesPalette.addOperation(
                 new NormalizeOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 null, 100, 100);
@@ -183,6 +187,11 @@ public class AlgorithmFlowEditor extends GraphEditor {
     
         @Override
         public boolean isCellResizable(Object cell) {
+            return false;
+        }
+    
+        @Override
+        public boolean isCellEditable(Object cell) {
             return false;
         }
     }

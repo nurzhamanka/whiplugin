@@ -1,5 +1,8 @@
 package graphs.editor;
 
+import com.mxgraph.analysis.StructuralException;
+import com.mxgraph.analysis.mxAnalysisGraph;
+import com.mxgraph.analysis.mxGraphStructure;
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
 import com.mxgraph.io.mxCodec;
@@ -948,4 +951,29 @@ public class Actions {
     }
     
     // todo: Action for packing the graph into a format that can be converted to ImageJ algorithms
+    public static class ValidateGraphAction extends AbstractAction {
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final mxGraphComponent graphComponent = (mxGraphComponent) e.getSource();
+            final mxGraph graph = graphComponent.getGraph();
+            
+            // valid = connected + DAG + first node is input, last node is output
+            boolean isInvalidated = false;
+            
+            // init an analysis graph
+            final mxAnalysisGraph aGraph = new mxAnalysisGraph();
+            aGraph.setGraph(graph);
+            
+            boolean isConnected = mxGraphStructure.isConnected(aGraph);
+            boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
+            boolean isConnectedDag = isConnected && isDag;
+            
+            try {
+                mxCell[] sources = (mxCell[]) mxGraphStructure.getSourceVertices(aGraph);
+            } catch (StructuralException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 }

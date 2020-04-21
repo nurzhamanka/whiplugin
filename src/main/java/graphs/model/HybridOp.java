@@ -32,6 +32,6 @@ public class HybridOp extends Operation {
     
     @Override
     public String toString() {
-        return String.format("%s\nsize = %s", super.toString(), kernelSize);
+        return String.format("%s\nsize = %sx%s", super.toString(), kernelSize, kernelSize);
     }
 }

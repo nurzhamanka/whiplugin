@@ -5,10 +5,7 @@ import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraphView;
-import graphs.editor.Actions.HistoryAction;
-import graphs.editor.Actions.NewAction;
-import graphs.editor.Actions.OpenAction;
-import graphs.editor.Actions.SaveAction;
+import graphs.editor.Actions.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,7 +59,7 @@ public class ToolBar extends JToolBar {
     
         addSeparator();
     
-        add(editor.bind("RUN", mxGraphActions.getDeleteAction()));
+        add(editor.bind("RUN", new ValidateGraphAction()));
         
         // Sets the zoom in the zoom combo the current value
         mxIEventListener scaleTracker = (sender, evt) -> {

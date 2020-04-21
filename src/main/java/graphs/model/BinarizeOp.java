@@ -40,7 +40,7 @@ public class BinarizeOp extends Operation {
     @Override
     public String toString() {
         if (threshType == ThresholdType.MEAN || threshType == ThresholdType.MEDIAN)
-            return String.format("%s\nthresholdType = %s\ndenominator = %s", super.toString(), threshType.toString(), denominator);
-        return String.format("%s\nthresholdType = %s", super.toString(), threshType.toString());
+            return String.format("%s\nt = %s/%.4f", super.toString(), threshType.toString(), denominator);
+        return String.format("%s\nt = %s", super.toString(), threshType.toString());
     }
 }

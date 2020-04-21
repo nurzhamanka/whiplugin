@@ -18,6 +18,12 @@ public class PropertiesDialogFactory {
                 return new TopHatDialog(cell, graph);
             case HYBRID:
                 return new HybridDialog(cell, graph);
+            case MATH:
+                return new MathDialog(cell, graph);
+            case MEAN:
+                return new SmoothDialog(cell, graph);
+            case BINARIZE:
+                return new BinarizeDialog(cell, graph);
             default:
                 return null;
         }
