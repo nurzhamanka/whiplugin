@@ -1064,7 +1064,7 @@ public class Actions {
         
                 if (!isInvalidated) {
                     System.out.println("Graph is valid!");
-                    new AlgorithmGraph(graph);
+                    AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
                 } else {
                     System.out.println("Graph is invalid!");
                 }
