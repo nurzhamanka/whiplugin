@@ -15,7 +15,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "hybrid")
 public class HybridFilter extends AbstractOp {
 

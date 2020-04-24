@@ -20,7 +20,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
 
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 @Plugin(type = Op.class, name = "entropy")
 public class LocalEntropyFilter extends AbstractOp {
 

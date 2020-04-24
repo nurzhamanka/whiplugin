@@ -14,18 +14,19 @@ import org.scijava.plugin.Plugin;
 
 import java.util.List;
 
+@SuppressWarnings("FieldCanBeLocal")
 @Plugin(type = Op.class, name = "tophatimage")
 public class TophatImage<T extends RealType<T>> extends AbstractOp {
-
+    
     @Parameter(type = ItemIO.INPUT)
     private Img<T> inImg;
-
+    
     @Parameter(type = ItemIO.OUTPUT)
     private Img<T> outImg;
-
+    
     @Parameter
     private LogService log;
-
+    
     @Override
     public void run() {
         
@@ -34,7 +35,7 @@ public class TophatImage<T extends RealType<T>> extends AbstractOp {
         
         final List<Shape> strel = Helper.getStrel(6);
         outImg = TopHat.topHat(inImg, strel, 4);
-
+        
         final long endTime = System.currentTimeMillis();
         final long fd = endTime - startTime;
         log.info("--- time: " + fd / 1000.0 + "s.");
@@ -42,6 +43,7 @@ public class TophatImage<T extends RealType<T>> extends AbstractOp {
     
     private static class Helper {
         private static List<Shape> strel;
+        
         static List<Shape> getStrel(int radius) {
             if (strel != null) return strel;
             strel = StructuringElements.disk(radius, 2);
