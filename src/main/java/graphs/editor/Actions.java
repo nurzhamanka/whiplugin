@@ -20,6 +20,7 @@ import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
+import fiji.util.gui.GenericDialogPlus;
 import graphs.AlgorithmGraph;
 import graphs.editor.dialog.PropertiesDialog;
 import graphs.editor.dialog.PropertiesDialogFactory;
@@ -965,6 +966,7 @@ public class Actions {
     
             // valid = connected + DAG + all sources are inputs, all sinks are outputs
             boolean isInvalidated = false;
+            String errorMsg = "Unknown";
             
             // init an analysis graph
             final mxAnalysisGraph aGraph = new mxAnalysisGraph();
@@ -974,13 +976,13 @@ public class Actions {
             boolean isConnected = mxGraphStructure.isConnected(aGraph);
     
             if (!isConnected) {
-                System.out.println("Graph not connected");
+                errorMsg = "Graph not connected";
             }
             
             boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
     
             if (!isDag) {
-                System.out.println("Graph not a DAG");
+                errorMsg = "Graph not a DAG";
             }
             
             boolean isConnectedDag = isConnected && isDag;
@@ -995,7 +997,7 @@ public class Actions {
                     for (mxCell source : sources) {
                         Operation op = (Operation) source.getValue();
                         if (op.getType() != OpType.INPUT) {
-                            System.out.println("A source is not an input");
+                            errorMsg = "A source is not an input";
                             areSourcesValid = false;
                             break;
                         }
@@ -1008,7 +1010,7 @@ public class Actions {
                         Operation op = (Operation) node.getValue();
                         if (op.getType() == OpType.INPUT) {
                             if (graph.getIncomingEdges(node).length > 0) {
-                                System.out.println("An input is not a source");
+                                errorMsg = "An input is not a source";
                                 areSourcesValid = false;
                                 break;
                             }
@@ -1016,7 +1018,6 @@ public class Actions {
                     }
                     
                     if (!areSourcesValid) isInvalidated = true;
-                    else System.out.println("All sources are inputs, and all inputs are sources");
                 } catch (StructuralException e1) {
                     isInvalidated = true;
                     e1.printStackTrace();
@@ -1030,7 +1031,7 @@ public class Actions {
                     for (mxCell sink : sinks) {
                         Operation op = (Operation) sink.getValue();
                         if (op.getType() != OpType.OUTPUT) {
-                            System.out.println("An sink is not an output");
+                            errorMsg = "A sink is not an output";
                             areSinksValid = false;
                             break;
                         }
@@ -1043,12 +1044,12 @@ public class Actions {
                         Operation op = (Operation) node.getValue();
                         if (op.getType() == OpType.OUTPUT) {
                             if (graph.getOutgoingEdges(node).length > 0) {
-                                System.out.println("An output is not a sink");
+                                errorMsg = "An output is not a sink";
                                 areSinksValid = false;
                                 break;
                             }
                             if (graph.getIncomingEdges(node).length > 1) {
-                                System.out.println("An output must have one parent");
+                                errorMsg = "An output must have one parent";
                                 areSinksValid = false;
                                 break;
                             }
@@ -1056,18 +1057,23 @@ public class Actions {
                     }
         
                     if (!areSinksValid) isInvalidated = true;
-                    else System.out.println("All sources are inputs");
                 } catch (StructuralException e1) {
                     isInvalidated = true;
                     e1.printStackTrace();
                 }
-        
-                if (!isInvalidated) {
-                    System.out.println("Graph is valid!");
-                    AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
-                } else {
-                    System.out.println("Graph is invalid!");
-                }
+            }
+    
+            if (!isInvalidated) {
+                final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
+                dialogParams.addMessage("Your graph is valid!\nAfter this step, the graph traversal & processing were supposed to begin.");
+                dialogParams.showDialog();
+                System.out.println("Graph is valid!");
+                AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
+            } else {
+                final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
+                dialogParams.addMessage("Sorry, your graph is invalid!\nReason: " + errorMsg);
+                dialogParams.showDialog();
+                System.out.println("Graph is invalid!");
             }
         }
     }
