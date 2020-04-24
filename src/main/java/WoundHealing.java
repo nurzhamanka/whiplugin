@@ -1,4 +1,7 @@
 import fiji.util.gui.GenericDialogPlus;
+import graphs.AlgorithmFlowEditor;
+import graphs.ImageJCore;
+import graphs.editor.MenuBar;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.ContrastEnhancer;
@@ -24,10 +27,12 @@ import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Wound Healing Tool")
 public class WoundHealing extends DynamicCommand {
@@ -57,41 +62,76 @@ public class WoundHealing extends DynamicCommand {
     private boolean isOverwrite;
     private boolean isShowProcess;
     
-    /**  */
+    /**
+     * GRAPH STUFF
+     */
+    private AlgorithmFlowEditor graphEditor;
     
     @SuppressWarnings("unchecked")
     public void run() {
-    
-        log.setLevel(0);
         
         activeDataset = imageDisplayService.getActiveDataset();
+    
+        // prevent concurrency issues
+        AtomicReference<Boolean> isGuiSelected = new AtomicReference<>(false);
+        
         if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
-            dialogActiveDataset.addMessage("Do you want to process the active dataset?");
+            dialogActiveDataset.addMessage("Choose a process");
+            dialogActiveDataset.addButton("Launch GUI", e -> {
+                isGuiSelected.set(true);
+                dialogActiveDataset.dispose();
+            });
+            dialogActiveDataset.enableYesNoCancel("Process active dataset", "Process a directory");
             dialogActiveDataset.addHelp(GITHUB_URL);
             dialogActiveDataset.showDialog();
             if (dialogActiveDataset.wasOKed()) {
                 populateParams(false);
                 if (isCanceled()) return;
                 processActiveDataset();
+            } else if (dialogActiveDataset.wasCanceled()) {
+                cancel();
+            } else if (!isGuiSelected.get()) {
+                populateParams(true);
+                if (isCanceled()) return;
+                processDirectory();
             } else {
-                final GenericDialogPlus dialogDirectory = new GenericDialogPlus(PLUGIN_NAME);
-                dialogDirectory.addMessage("Do you want to process a directory instead?");
-                dialogDirectory.addHelp(GITHUB_URL);
-                dialogDirectory.showDialog();
-                if (dialogDirectory.wasOKed()) {
-                    populateParams(true);
-                    if (isCanceled()) return;
-                    processDirectory();
-                } else {
-                    cancel("Plugin canceled by user");
-                }
+                launchGUI();
             }
         } else {
-            populateParams(true);
-            if (isCanceled()) return;
-            processDirectory();
+            final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
+            dialogActiveDataset.addMessage("Choose a process");
+            dialogActiveDataset.enableYesNoCancel("Launch GUI", "Process a directory");
+            dialogActiveDataset.addHelp(GITHUB_URL);
+            dialogActiveDataset.showDialog();
+            if (dialogActiveDataset.wasOKed()) {
+                launchGUI();
+            } else if (dialogActiveDataset.wasCanceled()) {
+                cancel();
+            } else {
+                populateParams(true);
+                if (isCanceled()) return;
+                processDirectory();
+            }
         }
+    }
+    
+    
+    private void launchGUI() {
+        log.info("GUI launched!");
+        SwingUtilities.invokeLater(() -> {
+            if (graphEditor == null) {
+                ImageJCore core = new ImageJCore();
+                core.setDatasetIOService(datasetIOService);
+                core.setDisplayService(displayService);
+                core.setImageDisplayService(imageDisplayService);
+                core.setLog(log);
+                core.setOps(ops);
+                core.setStatusService(statusService);
+                graphEditor.createFrame(new MenuBar(graphEditor)).setVisible(true);
+                graphEditor = new AlgorithmFlowEditor(core);
+            }
+        });
     }
     
     

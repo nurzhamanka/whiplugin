@@ -1003,22 +1003,22 @@ public class Actions {
                     isInvalidated = true;
                     e1.printStackTrace();
                 }
-
-//            try {
-//                boolean areSinksValid = true;
-//                mxCell[] sinks = (mxCell[]) mxGraphStructure.getSinkVertices(aGraph);
-//                for (mxCell sink: sinks) {
-//                    Operation op = (Operation) sink.getValue();
-//                    if (op.getType() != OpType.OUTPUT) {
-//                        areSinksValid = false;
-//                        break;
-//                    }
-//                }
-//                if (!areSinksValid) isInvalidated = true;
-//            } catch (StructuralException e1) {
-//                isInvalidated = true;
-//                e1.printStackTrace();
-//            }
+    
+                try {
+                    boolean areSinksValid = true;
+                    mxCell[] sinks = (mxCell[]) mxGraphStructure.getSinkVertices(aGraph);
+                    for (mxCell sink : sinks) {
+                        Operation op = (Operation) sink.getValue();
+                        if (op.getType() != OpType.OUTPUT) {
+                            areSinksValid = false;
+                            break;
+                        }
+                    }
+                    if (!areSinksValid) isInvalidated = true;
+                } catch (StructuralException e1) {
+                    isInvalidated = true;
+                    e1.printStackTrace();
+                }
         
                 if (!isInvalidated) {
                     System.out.println("Graph is valid!");

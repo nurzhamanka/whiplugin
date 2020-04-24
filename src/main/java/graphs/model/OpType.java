@@ -11,5 +11,6 @@ public enum OpType {
     BINARIZE,
     MATH,
     INPUT,
-    OUTPUT
+    OUTPUT,
+    JOIN
 }

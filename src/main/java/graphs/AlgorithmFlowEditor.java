@@ -25,12 +25,18 @@ import java.util.Map;
 @SuppressWarnings("ALL")
 public class AlgorithmFlowEditor extends GraphEditor {
     
-    public static final NumberFormat numberFormat = NumberFormat.getInstance();
+    private ImageJCore core;
     
+    public static final NumberFormat numberFormat = NumberFormat.getInstance();
     private static final long serialVersionUID = -4601740824088314699L;
     
     public AlgorithmFlowEditor() {
         this("Algorithm Builder", new CustomGraphComponent(new CustomGraph()));
+    }
+    
+    public AlgorithmFlowEditor(ImageJCore core) {
+        this();
+        this.core = core;
     }
     
     public AlgorithmFlowEditor(String appTitle, mxGraphComponent component) {

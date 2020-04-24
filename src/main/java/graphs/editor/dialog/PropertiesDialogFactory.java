@@ -14,6 +14,8 @@ public class PropertiesDialogFactory {
         switch (type) {
             case INPUT:
                 return new InputDialog(cell, graph);
+            case OUTPUT:
+                return new OutputDialog(cell, graph);
             case DOG:
                 return new DoGaussDialog(cell, graph);
             case TOPHAT:
