@@ -20,6 +20,7 @@ import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
+import graphs.AlgorithmGraph;
 import graphs.editor.dialog.PropertiesDialog;
 import graphs.editor.dialog.PropertiesDialogFactory;
 import graphs.model.OpType;
@@ -1021,6 +1022,7 @@ public class Actions {
         
                 if (!isInvalidated) {
                     System.out.println("Graph is valid!");
+                    new AlgorithmGraph(graph);
                 } else {
                     System.out.println("Graph is invalid!");
                 }

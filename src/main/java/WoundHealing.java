@@ -68,7 +68,7 @@ public class WoundHealing extends DynamicCommand {
         if (activeDataset != null) {
             final GenericDialogPlus dialogActiveDataset = new GenericDialogPlus(PLUGIN_NAME);
             dialogActiveDataset.addMessage("Do you want to process the active dataset?");
-            dialogActiveDataset.addHelp("https://github.com/nurzhamanka/whiplugin");
+            dialogActiveDataset.addHelp(GITHUB_URL);
             dialogActiveDataset.showDialog();
             if (dialogActiveDataset.wasOKed()) {
                 populateParams(false);
@@ -77,7 +77,7 @@ public class WoundHealing extends DynamicCommand {
             } else {
                 final GenericDialogPlus dialogDirectory = new GenericDialogPlus(PLUGIN_NAME);
                 dialogDirectory.addMessage("Do you want to process a directory instead?");
-                dialogDirectory.addHelp("https://github.com/nurzhamanka/whiplugin");
+                dialogDirectory.addHelp(GITHUB_URL);
                 dialogDirectory.showDialog();
                 if (dialogDirectory.wasOKed()) {
                     populateParams(true);
@@ -107,7 +107,7 @@ public class WoundHealing extends DynamicCommand {
         }
         dialogParams.addMessage("If checked, a separate stack showing the pipeline's steps will be produced.");
         dialogParams.addCheckbox("Produce a process stack?", true);
-        dialogParams.addHelp("https://github.com/nurzhamanka/whiplugin");
+        dialogParams.addHelp(GITHUB_URL);
         dialogParams.showDialog();
         if (dialogParams.wasOKed()) {
             // populate parameters
