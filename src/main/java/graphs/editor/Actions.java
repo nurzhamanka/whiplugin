@@ -1004,9 +1004,10 @@ public class Actions {
                     e1.printStackTrace();
                 }
     
+                // TODO: validate output nodes: sink if and only if output AND output has only 1 parent
                 try {
                     boolean areSinksValid = true;
-                    mxCell[] sinks = (mxCell[]) mxGraphStructure.getSinkVertices(aGraph);
+                    mxCell[] sinks = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
                     for (mxCell sink : sinks) {
                         Operation op = (Operation) sink.getValue();
                         if (op.getType() != OpType.OUTPUT) {

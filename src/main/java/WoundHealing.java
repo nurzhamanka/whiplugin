@@ -128,8 +128,8 @@ public class WoundHealing extends DynamicCommand {
                 core.setLog(log);
                 core.setOps(ops);
                 core.setStatusService(statusService);
-                graphEditor.createFrame(new MenuBar(graphEditor)).setVisible(true);
                 graphEditor = new AlgorithmFlowEditor(core);
+                graphEditor.createFrame(new MenuBar(graphEditor)).setVisible(true);
             }
         });
     }

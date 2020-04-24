@@ -8,6 +8,7 @@ public class Join extends Operation {
     
     public Join() {
         super("Join", OpType.JOIN);
+        strategy = JoinStrategy.AVERAGE;
     }
     
     public JoinStrategy getStrategy() {

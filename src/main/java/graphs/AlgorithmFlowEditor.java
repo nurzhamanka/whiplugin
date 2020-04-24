@@ -64,36 +64,44 @@ public class AlgorithmFlowEditor extends GraphEditor {
         // Adds some template cells for dropping into the graph
         nodesPalette.addOperation(
                 new InputOp(),
-                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/ellipse.png")),
+                "ellipse", 100, 100);
+        nodesPalette.addOperation(
+                new OutputOp(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/ellipse.png")),
+                "ellipse", 100, 100);
+        nodesPalette.addOperation(
+                new Join(),
+                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rhombus.png")),
+                "rhombus", 100, 100);
         nodesPalette.addOperation(
                 new NormalizeOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new MathOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new DoGaussOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new TopHatOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new HybridOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new SmoothOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         nodesPalette.addOperation(
                 new BinarizeOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
-                null, 100, 100);
+                "rectangle", 100, 100);
         
     }
     
