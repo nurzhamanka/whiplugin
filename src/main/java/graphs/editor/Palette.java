@@ -112,7 +112,6 @@ public class Palette extends JPanel {
         mxCell cell = new mxCell(opObject, new mxGeometry(0, 0, width, height),
                 style);
         cell.setVertex(true);
-        cell.setId("rhombus");
         addTemplate(opObject.getName(), icon, cell);
     }
     

@@ -28,6 +28,8 @@ public class PropertiesDialogFactory {
                 return new SmoothDialog(cell, graph);
             case BINARIZE:
                 return new BinarizeDialog(cell, graph);
+            case JOIN:
+                return new JoinDialog(cell, graph);
             default:
                 return null;
         }

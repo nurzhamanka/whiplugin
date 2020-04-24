@@ -987,35 +987,76 @@ public class Actions {
     
             if (!isConnectedDag) isInvalidated = true;
             else {
+                // source <=> input
                 try {
                     boolean areSourcesValid = true;
+                    // source => input
                     mxCell[] sources = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
                     for (mxCell source : sources) {
                         Operation op = (Operation) source.getValue();
                         if (op.getType() != OpType.INPUT) {
+                            System.out.println("A source is not an input");
                             areSourcesValid = false;
                             break;
                         }
                     }
+                    // input => source
+                    graph.selectCells(true, false);
+                    mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
+                    graph.selectCells(false, false);
+                    for (mxCell node : nodes) {
+                        Operation op = (Operation) node.getValue();
+                        if (op.getType() == OpType.INPUT) {
+                            if (graph.getIncomingEdges(node).length > 0) {
+                                System.out.println("An input is not a source");
+                                areSourcesValid = false;
+                                break;
+                            }
+                        }
+                    }
+                    
                     if (!areSourcesValid) isInvalidated = true;
-                    else System.out.println("All sources are inputs");
+                    else System.out.println("All sources are inputs, and all inputs are sources");
                 } catch (StructuralException e1) {
                     isInvalidated = true;
                     e1.printStackTrace();
                 }
     
-                // TODO: validate output nodes: sink if and only if output AND output has only 1 parent
+                // sink <=> output
                 try {
                     boolean areSinksValid = true;
-                    mxCell[] sinks = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
+                    // sink => output
+                    mxCell[] sinks = Arrays.stream(mxGraphStructure.getSinkVertices(aGraph)).toArray(mxCell[]::new);
                     for (mxCell sink : sinks) {
                         Operation op = (Operation) sink.getValue();
                         if (op.getType() != OpType.OUTPUT) {
+                            System.out.println("An sink is not an output");
                             areSinksValid = false;
                             break;
                         }
                     }
+                    // output => sink
+                    graph.selectCells(true, false);
+                    mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
+                    graph.selectCells(false, false);
+                    for (mxCell node : nodes) {
+                        Operation op = (Operation) node.getValue();
+                        if (op.getType() == OpType.OUTPUT) {
+                            if (graph.getOutgoingEdges(node).length > 0) {
+                                System.out.println("An output is not a sink");
+                                areSinksValid = false;
+                                break;
+                            }
+                            if (graph.getIncomingEdges(node).length > 1) {
+                                System.out.println("An output must have one parent");
+                                areSinksValid = false;
+                                break;
+                            }
+                        }
+                    }
+        
                     if (!areSinksValid) isInvalidated = true;
+                    else System.out.println("All sources are inputs");
                 } catch (StructuralException e1) {
                     isInvalidated = true;
                     e1.printStackTrace();
