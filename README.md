@@ -1,6 +1,6 @@
 ## Wound Healing Tool
 For my **Senior Project** at Nazarbayev University, I decided to build a tool for performing batch image segmentation of microscope images obtained during a [wound healing assay](https://en.wikipedia.org/wiki/Wound_healing_assay). The tool is actually a plugin for [FIJI/ImageJ2](https://fiji.sc/), an open-source Java image processing program. My friend, *Sholpan Kauanova, a Ph.D. student at Nazarbayev University*, inspired me to develop this. The project is built using the tools from the [SciJava](https://scijava.org/) ecosystem.
-![wound healing tool art](img/whi_art.png)
+![wound healing tool art](img/woundhealing.png)
 **The plugin consists of two parts:** *the base tool* for processing a dataset or a set of datasets using a predefined algorithm with some tunable parameters, and *a GUI* allowing users to create graphs representing custom algorithms.
 
 ### Installation
