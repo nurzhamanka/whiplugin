@@ -6,7 +6,7 @@
 
     <groupId>imagej</groupId>
     <artifactId>whi-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <build>
         <plugins>
             <plugin>
@@ -22,7 +22,7 @@
     </build>
 
     <name>Wound Healing Assay Plugin</name>
-    <description>This ImageJ plugin performs image segmentation and quantification for a WHA dataset</description>
+    <description>This ImageJ plugin performs image segmentation for a WHA dataset</description>
     <url>https://github.com/nurzhamanka/whiplugin</url>
     <inceptionYear>2019</inceptionYear>
     <licenses>
@@ -39,23 +39,10 @@
             <name>Nurzhan Sakenov</name>
             <url>https://github.com/nurzhamanka</url>
         </developer>
-        <developer>
-            <id>BekzhanKaspakov</id>
-            <name>Bekzhan Kaspakov</name>
-            <url>https://github.com/BekzhanKaspakov</url>
-        </developer>
-        <developer>
-            <id>madear</id>
-            <name>Madiyar Katranov</name>
-            <url>https://github.com/madear</url>
-        </developer>
     </developers>
     <contributors>
         <contributor>
             <name>Sholpan Kauanova</name>
-        </contributor>
-        <contributor>
-            <name>Ivan Vorobyev</name>
         </contributor>
         <contributor>
             <name>Martin Lukac</name>
@@ -128,12 +115,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

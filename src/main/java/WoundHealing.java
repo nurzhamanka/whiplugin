@@ -320,21 +320,24 @@ public class WoundHealing extends DynamicCommand {
         
         // square each pixel
         statusService.showStatus(1, 8, "Stretching histogram...");
-        img = (Img<DoubleType>) ops.run(MathFilter.class, img, MathType.SQUARE, null);
+        img = (Img<DoubleType>) ops.run(MathFilter.class, img, MathType.SQUARE, 2.0);
         if (processStack != null) processStack.addSlice("2. Squared Image", makeSlice(img));
         
         // difference of Gaussians
         statusService.showStatus(2, 8, "Bandpass Filtering...");
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         img = (Img<DoubleType>) ops.run(GaussianDifference.class, img, 2.0, 1.0);
         if (processStack != null) processStack.addSlice("3. DoG", makeSlice(img));
         
         // hybrid filter
         statusService.showStatus(3, 8, "Gradient Denoising...");
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         img = (Img<DoubleType>) ops.run(HybridFilter.class, img, 9);
         if (processStack != null) processStack.addSlice("4. Hybrid Filter", makeSlice(img));
         
         // TopHat morphology filtering
         statusService.showStatus(4, 8, "Morphological Filtering...");
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         img = (Img<DoubleType>) ops.run(TophatImage.class, img, TopHatOp.ThType.WHITE, TopHatOp.Shape.DISK, 6);
         if (processStack != null) processStack.addSlice("5. Top Hat", makeSlice(img));
 
@@ -350,11 +353,13 @@ public class WoundHealing extends DynamicCommand {
         
         // average filter
         statusService.showStatus(5, 8, "Smoothing image...");
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         img = (Img<DoubleType>) ops.run(AverageFilter.class, img, 19);
         if (processStack != null) processStack.addSlice("6. Mean Smoothing", makeSlice(img));
     
         // get the binary mask
         statusService.showStatus(6, 8, "Binarizing image...");
+        img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         final Img<BitType> binImg = (Img<BitType>) ops.run(Binarize.class, img, ThresholdType.MEAN, Math.PI, true);
         img = ops.convert().float64(binImg);
         if (processStack != null) processStack.addSlice("7. Binary Mask", makeSlice(img));
