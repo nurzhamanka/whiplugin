@@ -29,6 +29,8 @@ import org.scijava.display.DisplayService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.thread.ThreadService;
+import org.scijava.ui.UIService;
 
 import javax.swing.*;
 import java.io.File;
@@ -57,6 +59,10 @@ public class WoundHealing extends DynamicCommand {
     private LogService log;
     @Parameter
     private StatusService statusService;
+    @Parameter
+    private ThreadService thread;
+    @Parameter
+    private UIService ui;
     
     /** PARAMETERS */
     private Dataset activeDataset;
@@ -131,6 +137,8 @@ public class WoundHealing extends DynamicCommand {
                 core.setLog(log);
                 core.setOps(ops);
                 core.setStatusService(statusService);
+                core.setThread(thread);
+                core.setUi(ui);
                 graphEditor = new AlgorithmFlowEditor(core);
                 graphEditor.createFrame(new MenuBar(graphEditor)).setVisible(true);
             }

@@ -6,6 +6,8 @@ import net.imagej.ops.OpService;
 import org.scijava.app.StatusService;
 import org.scijava.display.DisplayService;
 import org.scijava.log.LogService;
+import org.scijava.thread.ThreadService;
+import org.scijava.ui.UIService;
 
 public class ImageJCore {
     
@@ -18,6 +20,8 @@ public class ImageJCore {
     private OpService ops;
     private LogService log;
     private StatusService statusService;
+    private ThreadService thread;
+    private UIService ui;
     
     public ImageJCore() {
     
@@ -69,5 +73,21 @@ public class ImageJCore {
     
     public void setStatusService(StatusService statusService) {
         this.statusService = statusService;
+    }
+    
+    public ThreadService getThread() {
+        return thread;
+    }
+    
+    public void setThread(ThreadService thread) {
+        this.thread = thread;
+    }
+    
+    public UIService getUi() {
+        return ui;
+    }
+    
+    public void setUi(UIService ui) {
+        this.ui = ui;
     }
 }

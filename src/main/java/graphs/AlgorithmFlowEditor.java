@@ -26,6 +26,8 @@ import java.util.Map;
 public class AlgorithmFlowEditor extends GraphEditor {
     
     public static ImageJCore core;
+    public static boolean isRunning = false;
+    public static boolean isCanceled = false;
     
     public static final NumberFormat numberFormat = NumberFormat.getInstance();
     private static final long serialVersionUID = -4601740824088314699L;
@@ -45,7 +47,6 @@ public class AlgorithmFlowEditor extends GraphEditor {
         
         // Creates the shapes palette
         final Palette nodesPalette = insertPalette("Nodes");
-        
         // Sets the edge template to be used for creating new edges if an edge
         // is clicked in the shape palette
         nodesPalette.addListener(mxEvent.SELECT, (sender, evt) -> {

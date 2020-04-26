@@ -963,125 +963,135 @@ public class Actions {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            final mxGraphComponent graphComponent = (mxGraphComponent) e.getSource();
-            final mxGraph graph = graphComponent.getGraph();
     
-            // valid = connected + DAG + all sources are inputs, all sinks are outputs
-            boolean isInvalidated = false;
-            String errorMsg = "Unknown";
-            
-            // init an analysis graph
-            final mxAnalysisGraph aGraph = new mxAnalysisGraph();
-            aGraph.setGraph(graph);
-            mxGraphProperties.setDirected(aGraph.getProperties(), true);
-            
-            boolean isConnected = mxGraphStructure.isConnected(aGraph);
-    
-            if (!isConnected) {
-                errorMsg = "Graph not connected";
-            }
-            
-            boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
-    
-            if (!isDag) {
-                errorMsg = "Graph not a DAG";
-            }
-            
-            boolean isConnectedDag = isConnected && isDag;
-    
-            if (!isConnectedDag) isInvalidated = true;
-            else {
-                // source <=> input
-                try {
-                    boolean areSourcesValid = true;
-                    // source => input
-                    mxCell[] sources = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
-                    for (mxCell source : sources) {
-                        Operation op = (Operation) source.getValue();
-                        if (op.getType() != OpType.INPUT) {
-                            errorMsg = "A source is not an input";
-                            areSourcesValid = false;
-                            break;
-                        }
-                    }
-                    // input => source
-                    graph.selectCells(true, false);
-                    mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
-                    graph.selectCells(false, false);
-                    for (mxCell node : nodes) {
-                        Operation op = (Operation) node.getValue();
-                        if (op.getType() == OpType.INPUT) {
-                            if (graph.getIncomingEdges(node).length > 0) {
-                                errorMsg = "An input is not a source";
+            if (AlgorithmFlowEditor.isRunning) {
+                final GenericDialogPlus dialogParams = new GenericDialogPlus("Processing");
+                dialogParams.addMessage("Your process is already running!");
+                dialogParams.showDialog();
+            } else {
+                final mxGraphComponent graphComponent = (mxGraphComponent) e.getSource();
+                final mxGraph graph = graphComponent.getGraph();
+        
+                // valid = connected + DAG + all sources are inputs, all sinks are outputs
+                boolean isInvalidated = false;
+                String errorMsg = "Unknown";
+        
+                // init an analysis graph
+                final mxAnalysisGraph aGraph = new mxAnalysisGraph();
+                aGraph.setGraph(graph);
+                mxGraphProperties.setDirected(aGraph.getProperties(), true);
+        
+                boolean isConnected = mxGraphStructure.isConnected(aGraph);
+        
+                if (!isConnected) {
+                    errorMsg = "Graph not connected";
+                }
+        
+                boolean isDag = !mxGraphStructure.isCyclicDirected(aGraph);
+        
+                if (!isDag) {
+                    errorMsg = "Graph not a DAG";
+                }
+        
+                boolean isConnectedDag = isConnected && isDag;
+        
+                if (!isConnectedDag) isInvalidated = true;
+                else {
+                    // source <=> input
+                    try {
+                        boolean areSourcesValid = true;
+                        // source => input
+                        mxCell[] sources = Arrays.stream(mxGraphStructure.getSourceVertices(aGraph)).toArray(mxCell[]::new);
+                        for (mxCell source : sources) {
+                            Operation op = (Operation) source.getValue();
+                            if (op.getType() != OpType.INPUT) {
+                                errorMsg = "A source is not an input";
                                 areSourcesValid = false;
                                 break;
                             }
                         }
-                        if (!op.isValid()) {
-                            errorMsg = String.format("Node <%s, %s> is not valid", op.getName(), op.getType());
-                            isInvalidated = true;
-                            break;
+                        // input => source
+                        graph.selectCells(true, false);
+                        mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
+                        graph.selectCells(false, false);
+                        for (mxCell node : nodes) {
+                            Operation op = (Operation) node.getValue();
+                            if (op.getType() == OpType.INPUT) {
+                                if (graph.getIncomingEdges(node).length > 0) {
+                                    errorMsg = "An input is not a source";
+                                    areSourcesValid = false;
+                                    break;
+                                }
+                            }
+                            if (!op.isValid()) {
+                                errorMsg = String.format("Node <%s, %s> is not valid", op.getName(), op.getType());
+                                isInvalidated = true;
+                                break;
+                            }
                         }
+                
+                        if (!areSourcesValid) isInvalidated = true;
+                    } catch (StructuralException e1) {
+                        isInvalidated = true;
+                        e1.printStackTrace();
                     }
-                    
-                    if (!areSourcesValid) isInvalidated = true;
-                } catch (StructuralException e1) {
-                    isInvalidated = true;
-                    e1.printStackTrace();
+            
+                    // sink <=> output
+                    try {
+                        boolean areSinksValid = true;
+                        // sink => output
+                        mxCell[] sinks = Arrays.stream(mxGraphStructure.getSinkVertices(aGraph)).toArray(mxCell[]::new);
+                        for (mxCell sink : sinks) {
+                            Operation op = (Operation) sink.getValue();
+                            if (op.getType() != OpType.OUTPUT) {
+                                errorMsg = "A sink is not an output";
+                                areSinksValid = false;
+                                break;
+                            }
+                        }
+                        // output => sink
+                        graph.selectCells(true, false);
+                        mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
+                        graph.selectCells(false, false);
+                        for (mxCell node : nodes) {
+                            Operation op = (Operation) node.getValue();
+                            if (op.getType() == OpType.OUTPUT) {
+                                if (graph.getOutgoingEdges(node).length > 0) {
+                                    errorMsg = "An output is not a sink";
+                                    areSinksValid = false;
+                                    break;
+                                }
+                                if (graph.getIncomingEdges(node).length > 1) {
+                                    errorMsg = "An output must have one parent";
+                                    areSinksValid = false;
+                                    break;
+                                }
+                            }
+                        }
+                
+                        if (!areSinksValid) isInvalidated = true;
+                    } catch (StructuralException e1) {
+                        isInvalidated = true;
+                        e1.printStackTrace();
+                    }
                 }
-    
-                // sink <=> output
-                try {
-                    boolean areSinksValid = true;
-                    // sink => output
-                    mxCell[] sinks = Arrays.stream(mxGraphStructure.getSinkVertices(aGraph)).toArray(mxCell[]::new);
-                    for (mxCell sink : sinks) {
-                        Operation op = (Operation) sink.getValue();
-                        if (op.getType() != OpType.OUTPUT) {
-                            errorMsg = "A sink is not an output";
-                            areSinksValid = false;
-                            break;
-                        }
-                    }
-                    // output => sink
-                    graph.selectCells(true, false);
-                    mxCell[] nodes = Arrays.stream(graph.getSelectionCells()).toArray(mxCell[]::new);
-                    graph.selectCells(false, false);
-                    for (mxCell node : nodes) {
-                        Operation op = (Operation) node.getValue();
-                        if (op.getType() == OpType.OUTPUT) {
-                            if (graph.getOutgoingEdges(node).length > 0) {
-                                errorMsg = "An output is not a sink";
-                                areSinksValid = false;
-                                break;
-                            }
-                            if (graph.getIncomingEdges(node).length > 1) {
-                                errorMsg = "An output must have one parent";
-                                areSinksValid = false;
-                                break;
-                            }
-                        }
-                    }
         
-                    if (!areSinksValid) isInvalidated = true;
-                } catch (StructuralException e1) {
-                    isInvalidated = true;
-                    e1.printStackTrace();
+                if (!isInvalidated) {
+                    final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
+                    dialogParams.addMessage("Your graph is valid!\nPress OK to begin processing.");
+                    dialogParams.showDialog();
+                    System.out.println("Graph is valid!");
+                    AlgorithmFlowEditor.core.getThread().run(() -> {
+                        AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
+                        GraphProcessor processor = new GraphProcessor(AlgorithmFlowEditor.core, algoGraph);
+                    });
+                    AlgorithmFlowEditor.core.getUi().getDefaultUI().getConsolePane();
+                } else {
+                    final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
+                    dialogParams.addMessage("Sorry, your graph is invalid!\nReason: " + errorMsg);
+                    dialogParams.showDialog();
+                    System.out.println("Graph is invalid!");
                 }
-            }
-    
-            if (!isInvalidated) {
-                final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
-                dialogParams.addMessage("Your graph is valid!\nAfter this step, the graph traversal & processing were supposed to begin.");
-                dialogParams.showDialog();
-                System.out.println("Graph is valid!");
-                AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
-                GraphProcessor processor = new GraphProcessor(AlgorithmFlowEditor.core, algoGraph);
-            } else {
-                final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
-                dialogParams.addMessage("Sorry, your graph is invalid!\nReason: " + errorMsg);
-                dialogParams.showDialog();
-                System.out.println("Graph is invalid!");
             }
         }
     }
