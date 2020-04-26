@@ -4,7 +4,7 @@ For my **Senior Project** at Nazarbayev University, I decided to build a tool fo
 **The plugin consists of two parts:** *the base tool* for processing a dataset or a set of datasets using a predefined algorithm with some tunable parameters, and *a GUI* allowing users to create graphs representing custom algorithms.
 
 ### Installation
-- Download the latest release 
+- Download [the latest release](https://github.com/nurzhamanka/whiplugin/releases)
 - Install via FIJI (Plugins > Install Plugin...)
 
 ### Usage
