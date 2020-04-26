@@ -2,6 +2,7 @@ import fiji.util.gui.GenericDialogPlus;
 import graphs.AlgorithmFlowEditor;
 import graphs.ImageJCore;
 import graphs.editor.MenuBar;
+import graphs.model.MathType;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.ContrastEnhancer;
@@ -309,7 +310,7 @@ public class WoundHealing extends DynamicCommand {
         
         // square each pixel
         statusService.showStatus(1, 8, "Stretching histogram...");
-        img = (Img<DoubleType>) ops.run(SquareImage.class, img);
+        img = (Img<DoubleType>) ops.run(MathFilter.class, img, MathType.SQUARE, null);
         img = (Img<DoubleType>) ops.run(Normalize.class, img, 0.0, 1.0);
         if (processStack != null) processStack.addSlice("2. Squared Image", makeSlice(img));
         

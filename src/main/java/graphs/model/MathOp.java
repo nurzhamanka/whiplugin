@@ -10,6 +10,7 @@ public class MathOp extends Operation {
     public MathOp() {
         super("Math", OpType.MATH);
         this.mathType = MathType.SQUARE;
+        this.arg = Float.NaN;
     }
     
     public MathOp(MathType mathType) {
@@ -18,7 +19,7 @@ public class MathOp extends Operation {
     }
     
     public void clearArg() {
-        arg = null;
+        arg = Float.NaN;
     }
     
     public MathType getMathType() {
@@ -40,7 +41,7 @@ public class MathOp extends Operation {
     @Override
     public boolean isValid() {
         if (mathType == MathType.SQUARE || mathType == MathType.SQRT) return true;
-        if (mathType == MathType.POW) return arg != null;
+        if (mathType == MathType.POW) return arg != Float.NaN;
         return true;
     }
     
