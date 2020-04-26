@@ -25,7 +25,7 @@ import java.util.Map;
 @SuppressWarnings("ALL")
 public class AlgorithmFlowEditor extends GraphEditor {
     
-    private ImageJCore core;
+    public static ImageJCore core;
     
     public static final NumberFormat numberFormat = NumberFormat.getInstance();
     private static final long serialVersionUID = -4601740824088314699L;

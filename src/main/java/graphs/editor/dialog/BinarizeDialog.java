@@ -14,6 +14,7 @@ public class BinarizeDialog extends PropertiesDialog {
     
     private ThresholdType threshType;
     private Double denominator;
+    private Boolean doParticleAnalysis;
     
     private JLabel typeLabel;
     private JComboBox<ThresholdType> typeBox;
@@ -27,11 +28,15 @@ public class BinarizeDialog extends PropertiesDialog {
     private JLabel convertLabel;
     private JCheckBox convertCheckBox;
     
+    private JLabel analysisLabel;
+    private JCheckBox analysisCheckBox;
+    
     public BinarizeDialog(mxCell cell, mxGraph graph) {
         super(cell, graph);
         binOp = (BinarizeOp) operation;
         threshType = binOp.getThreshType();
         denominator = binOp.getDenominator();
+        doParticleAnalysis = binOp.getDoParticleAnalysis();
         populateFields();
         assembleDialog();
     }
@@ -53,6 +58,10 @@ public class BinarizeDialog extends PropertiesDialog {
         
         convertLabel = new JLabel();
         convertCheckBox = new JCheckBox("3.14...->PI & 2.71...->E");
+    
+        analysisLabel = new JLabel("Try particle analysis for cleaning up the mask (may cause errors!)");
+        analysisCheckBox = new JCheckBox("Particle Analysis");
+        analysisCheckBox.setSelected(doParticleAnalysis);
         
         labelPanel.add(typeLabel);
         fieldPanel.add(typeBox);
@@ -62,6 +71,9 @@ public class BinarizeDialog extends PropertiesDialog {
         
         labelPanel.add(convertLabel);
         fieldPanel.add(convertCheckBox);
+    
+        labelPanel.add(analysisLabel);
+        fieldPanel.add(analysisCheckBox);
     }
     
     @Override
@@ -73,6 +85,7 @@ public class BinarizeDialog extends PropertiesDialog {
         else if (Math.abs(denom - Math.E) < 0.01 && convertCheckBox.isSelected())
             denom = Math.E;
         binOp.setDenominator(denom);
+        binOp.setDoParticleAnalysis(analysisCheckBox.isSelected());
         graph.refresh();
     }
 }

@@ -1,5 +1,6 @@
 package ops;
 
+import graphs.model.ThresholdType;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -36,6 +37,15 @@ public class Binarize extends AbstractOp {
     @Parameter(type = ItemIO.INPUT)
     private Img<DoubleType> inImg;
     
+    @Parameter(type = ItemIO.INPUT)
+    private ThresholdType threshType;
+    
+    @Parameter(type = ItemIO.INPUT)
+    private Double denominator;
+    
+    @Parameter(type = ItemIO.INPUT)
+    private Boolean doParticleAnalysis;
+    
     @Parameter(type = ItemIO.OUTPUT)
     private Img<BitType> outImg;
     
@@ -53,8 +63,29 @@ public class Binarize extends AbstractOp {
         
         log.info("--- applying threshold");
     
-        outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().mean(inImg).getRealDouble() / (Math.PI + 0.1)));
-        // outImg = (Img<BitType>) ops.threshold().otsu(inImg);
+        switch (threshType) {
+            case MEAN:
+                outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().mean(inImg).getRealDouble() / denominator));
+                break;
+            case MEDIAN:
+                outImg = (Img<BitType>) ops.threshold().apply(inImg, new DoubleType(ops.stats().median(inImg).getRealDouble() / denominator));
+                break;
+            case OTSU:
+                outImg = (Img<BitType>) ops.threshold().otsu(inImg);
+                break;
+            case HUANG:
+                outImg = (Img<BitType>) ops.threshold().huang(inImg);
+                break;
+            case RENYI:
+                outImg = (Img<BitType>) ops.threshold().renyiEntropy(inImg);
+                break;
+            case ISO_DATA:
+                outImg = (Img<BitType>) ops.threshold().isoData(inImg);
+                break;
+            case MAX_ENTROPY:
+                outImg = (Img<BitType>) ops.threshold().maxEntropy(inImg);
+                break;
+        }
     
         log.info("--- inverting image...");
         outImg.forEach(p -> p.set(!p.get()));
@@ -77,110 +108,113 @@ public class Binarize extends AbstractOp {
         log.info("--- inverting image...");
         outImg.forEach(p -> p.set(!p.get()));
     
-        /* use a legacy ROI manager to clean black artifacts */
-        final RoiManager roiManager = new RoiManager(true);
-        final ResultsTable rt = new ResultsTable();
-        final ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(
-                ParticleAnalyzer.ADD_TO_MANAGER,
-                Measurements.AREA, rt, 0, Double.POSITIVE_INFINITY);
-        //noinspection AccessStaticViaInstance
-        particleAnalyzer.setRoiManager(roiManager);
-        particleAnalyzer.setHideOutputImage(true);
-
-        final ImagePlus invImp = ImageJFunctions.wrapBit(outImg, "Binarized (Dirty)");
-        final ByteProcessor ip = invImp.getProcessor().convertToByteProcessor();
-        assert (ip.isBinary());
-        ip.snapshot();
-
-        if (particleAnalyzer.analyze(invImp, ip)) {
-            log.info("--- wound particle detection successful");
-            // separate the two largest regions (the monolayer) from the wound
-            final Roi[] rois = roiManager.getRoisAsArray();
-            assert (roiManager.getRoi(0).equals(rois[0]));
-            final int[] maxIndices = {-1, -1};
-            long currentMax1 = 0;
-            long currentMax2 = 0;
-            for (int i = 0; i < rois.length; i++) {
-                final long probe = rois[i].getStatistics().longPixelCount;
-                if (probe > currentMax1) {
-                    currentMax2 = currentMax1;
-                    maxIndices[1] = maxIndices[0];
-                    currentMax1 = probe;
-                    maxIndices[0] = i;
-                } else if (probe > currentMax2) {
-                    currentMax2 = probe;
-                    maxIndices[1] = i;
-                }
-            }
-            final int[] roiIndices = new int[rois.length - 2];
-            for (int i = 0, j = 0; i < rois.length; i++) {
-                if (i != maxIndices[0] && i != maxIndices[1]) {
-                    roiIndices[j] = i;
-                    j++;
-                }
-            }
-            // whiten the artifacts
-            for (int i : roiIndices) {
-                ip.setRoi(rois[i]);
-                ip.setValue(0);
-                ip.fill();
-                ip.reset(ip.getMask());
-            }
-            log.info("--- wound artifacts fixed");
-        } else {
-            log.error("--- wound particle detection failed");
-        }
+        if (doParticleAnalysis) {
+            /* use a legacy ROI manager to clean black artifacts */
+            final RoiManager roiManager = new RoiManager(true);
+            final ResultsTable rt = new ResultsTable();
+            final ParticleAnalyzer particleAnalyzer = new ParticleAnalyzer(
+                    ParticleAnalyzer.ADD_TO_MANAGER,
+                    Measurements.AREA, rt, 0, Double.POSITIVE_INFINITY);
+            //noinspection AccessStaticViaInstance
+            particleAnalyzer.setRoiManager(roiManager);
+            particleAnalyzer.setHideOutputImage(true);
         
-        // now the wound should be completely white
-        ip.resetRoi();
-        ip.invert();
-        roiManager.reset();
-        rt.reset();
-    
-        final ParticleAnalyzer particleAnalyzer2 = new ParticleAnalyzer(
-                ParticleAnalyzer.ADD_TO_MANAGER,
-                Measurements.AREA, rt, 1000, Double.POSITIVE_INFINITY);
-        //noinspection AccessStaticViaInstance
-        particleAnalyzer2.setRoiManager(roiManager);
-        particleAnalyzer2.setHideOutputImage(true);
-        final ImagePlus imp = new ImagePlus("Fixed Wound, white monolayer", ip);
-        ImageProcessor ip2 = imp.getProcessor().convertToByteProcessor();
-        assert (ip2.isBinary());
-    
-        if (particleAnalyzer2.analyze(imp, ip2)) {
-            log.info("--- wound detection successful");
-            // find the largest ROI (the wound) and invert the selection
-            final Roi[] rois = roiManager.getRoisAsArray();
-            assert (roiManager.getRoi(0).equals(rois[0]));
-            int maxIndex = -1;
-            long currentMax = 0;
-            for (int i = 0; i < rois.length; i++) {
-                final long probe = rois[i].getStatistics().longPixelCount;
-                if (probe > currentMax) {
-                    currentMax = probe;
-                    maxIndex = i;
+            final ImagePlus invImp = ImageJFunctions.wrapBit(outImg, "Binarized (Dirty)");
+            final ByteProcessor ip = invImp.getProcessor().convertToByteProcessor();
+            assert (ip.isBinary());
+            ip.snapshot();
+        
+            if (particleAnalyzer.analyze(invImp, ip)) {
+                log.info("--- wound particle detection successful");
+                // separate the two largest regions (the monolayer) from the wound
+                final Roi[] rois = roiManager.getRoisAsArray();
+                assert (roiManager.getRoi(0).equals(rois[0]));
+                final int[] maxIndices = {-1, -1};
+                long currentMax1 = 0;
+                long currentMax2 = 0;
+                for (int i = 0; i < rois.length; i++) {
+                    final long probe = rois[i].getStatistics().longPixelCount;
+                    if (probe > currentMax1) {
+                        currentMax2 = currentMax1;
+                        maxIndices[1] = maxIndices[0];
+                        currentMax1 = probe;
+                        maxIndices[0] = i;
+                    } else if (probe > currentMax2) {
+                        currentMax2 = probe;
+                        maxIndices[1] = i;
+                    }
                 }
+                final int[] roiIndices = new int[rois.length - 2];
+                for (int i = 0, j = 0; i < rois.length; i++) {
+                    if (i != maxIndices[0] && i != maxIndices[1]) {
+                        roiIndices[j] = i;
+                        j++;
+                    }
+                }
+                // whiten the artifacts
+                for (int i : roiIndices) {
+                    ip.setRoi(rois[i]);
+                    ip.setValue(0);
+                    ip.fill();
+                    ip.reset(ip.getMask());
+                }
+                log.info("--- wound artifacts fixed");
+            } else {
+                log.error("--- wound particle detection failed");
             }
-            final Roi antiWound = roiManager.getRoi(maxIndex).getInverse(imp);
-            assert (antiWound != null);
-            ip2.setRoi(antiWound);
-            ip2.setValue(0);
-            ip2.fill();
-            ip2.reset(ip2.getMask());
-            ip2.resetRoi();
+        
+            // now the wound should be completely white
+            ip.resetRoi();
+            ip.invert();
+            roiManager.reset();
+            rt.reset();
+        
+            final ParticleAnalyzer particleAnalyzer2 = new ParticleAnalyzer(
+                    ParticleAnalyzer.ADD_TO_MANAGER,
+                    Measurements.AREA, rt, 1000, Double.POSITIVE_INFINITY);
+            //noinspection AccessStaticViaInstance
+            particleAnalyzer2.setRoiManager(roiManager);
+            particleAnalyzer2.setHideOutputImage(true);
+            final ImagePlus imp = new ImagePlus("Fixed Wound, white monolayer", ip);
+            ImageProcessor ip2 = imp.getProcessor().convertToByteProcessor();
+            assert (ip2.isBinary());
+        
+            if (particleAnalyzer2.analyze(imp, ip2)) {
+                log.info("--- wound detection successful");
+                // find the largest ROI (the wound) and invert the selection
+                final Roi[] rois = roiManager.getRoisAsArray();
+                assert (roiManager.getRoi(0).equals(rois[0]));
+                int maxIndex = -1;
+                long currentMax = 0;
+                for (int i = 0; i < rois.length; i++) {
+                    final long probe = rois[i].getStatistics().longPixelCount;
+                    if (probe > currentMax) {
+                        currentMax = probe;
+                        maxIndex = i;
+                    }
+                }
+                final Roi antiWound = roiManager.getRoi(maxIndex).getInverse(imp);
+                assert (antiWound != null);
+                ip2.setRoi(antiWound);
+                ip2.setValue(0);
+                ip2.fill();
+                ip2.reset(ip2.getMask());
+                ip2.resetRoi();
 //            ip2 = antiWound.getMask();
 //            ip2.invert();
-            log.info("--- wound extracted");
-        } else {
-            log.error("--- wound detection failed");
-        }
-    
-        roiManager.reset();
-        rt.reset();
+                log.info("--- wound extracted");
+            } else {
+                log.error("--- wound detection failed");
+            }
         
-        final Img<UnsignedByteType> invImg = ImageJFunctions.wrap(new ImagePlus("Binarized (Clean)", ip2));
-    
-        outImg = ops.convert().bit(invImg);
+            roiManager.reset();
+            rt.reset();
+        
+            final Img<UnsignedByteType> invImg = ImageJFunctions.wrap(new ImagePlus("Binarized (Clean)", ip2));
+        
+            outImg = ops.convert().bit(invImg);
+        }
+        
         outImg = Closing.close(outImg, strel3, 4);
         
         long endTime = System.currentTimeMillis();

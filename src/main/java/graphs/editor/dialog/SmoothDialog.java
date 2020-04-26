@@ -10,7 +10,7 @@ public class SmoothDialog extends PropertiesDialog {
     
     private SmoothOp smoothOp;
     
-    private int kernelSize;
+    private Integer kernelSize;
     
     private JLabel kernelSizeLabel;
     private JSlider kernelSizeSlider;

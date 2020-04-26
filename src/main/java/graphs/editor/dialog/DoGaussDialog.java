@@ -11,7 +11,7 @@ public class DoGaussDialog extends PropertiesDialog {
     
     private DoGaussOp gaussOp;
     
-    private double[] sigmas = new double[2];
+    private Double[] sigmas = new Double[2];
     
     private JLabel[] sigmaLabels = new JLabel[2];
     private JFormattedTextField[] sigmaFields = new JFormattedTextField[2];

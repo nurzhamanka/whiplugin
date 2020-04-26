@@ -21,7 +21,9 @@ import com.mxgraph.util.png.mxPngImageEncoder;
 import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
 import fiji.util.gui.GenericDialogPlus;
+import graphs.AlgorithmFlowEditor;
 import graphs.AlgorithmGraph;
+import graphs.GraphProcessor;
 import graphs.editor.dialog.PropertiesDialog;
 import graphs.editor.dialog.PropertiesDialogFactory;
 import graphs.model.OpType;
@@ -1015,6 +1017,11 @@ public class Actions {
                                 break;
                             }
                         }
+                        if (!op.isValid()) {
+                            errorMsg = String.format("Node <%s, %s> is not valid", op.getName(), op.getType());
+                            isInvalidated = true;
+                            break;
+                        }
                     }
                     
                     if (!areSourcesValid) isInvalidated = true;
@@ -1069,6 +1076,7 @@ public class Actions {
                 dialogParams.showDialog();
                 System.out.println("Graph is valid!");
                 AlgorithmGraph algoGraph = new AlgorithmGraph(graph);
+                GraphProcessor processor = new GraphProcessor(AlgorithmFlowEditor.core, algoGraph);
             } else {
                 final GenericDialogPlus dialogParams = new GenericDialogPlus("Graph Validation");
                 dialogParams.addMessage("Sorry, your graph is invalid!\nReason: " + errorMsg);

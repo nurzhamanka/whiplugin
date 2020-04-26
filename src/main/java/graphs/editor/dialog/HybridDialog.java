@@ -10,7 +10,7 @@ public class HybridDialog extends PropertiesDialog {
     
     private HybridOp hybridOp;
     
-    private int kernelSize;
+    private Integer kernelSize;
     
     private JLabel kernelSizeLabel;
     private JSlider kernelSizeSlider;

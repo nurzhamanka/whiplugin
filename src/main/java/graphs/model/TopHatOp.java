@@ -6,9 +6,9 @@ public class TopHatOp extends Operation {
     
     private ThType thType;
     private Shape shape;
-    private int radius;
+    private Integer radius;
     
-    public TopHatOp(ThType thType, Shape shape, int radius) {
+    public TopHatOp(ThType thType, Shape shape, Integer radius) {
         super("Top-Hat", OpType.TOPHAT);
         this.thType = thType;
         this.shape = shape;
@@ -38,11 +38,11 @@ public class TopHatOp extends Operation {
         this.shape = shape;
     }
     
-    public int getRadius() {
+    public Integer getRadius() {
         return radius;
     }
     
-    public void setRadius(int radius) {
+    public void setRadius(Integer radius) {
         this.radius = radius;
     }
     

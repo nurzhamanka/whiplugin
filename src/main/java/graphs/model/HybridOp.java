@@ -4,18 +4,18 @@ import java.util.Map;
 
 public class HybridOp extends Operation {
     
-    private int kernelSize;
+    private Integer kernelSize;
     
     public HybridOp() {
         super("Hybrid Filter", OpType.HYBRID);
         kernelSize = 5;
     }
     
-    public HybridOp(int kernelSize) {
+    public HybridOp(Integer kernelSize) {
         this.kernelSize = kernelSize;
     }
     
-    public int getKernelSize() {
+    public Integer getKernelSize() {
         return kernelSize;
     }
     

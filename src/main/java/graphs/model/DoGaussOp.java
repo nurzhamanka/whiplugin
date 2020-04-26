@@ -4,8 +4,8 @@ import java.util.Map;
 
 public class DoGaussOp extends Operation {
     
-    private double sigma1;
-    private double sigma2;
+    private Double sigma1;
+    private Double sigma2;
     
     public DoGaussOp(double sigma1, double sigma2) {
         super("Difference of Gaussians", OpType.DOG);
@@ -15,23 +15,23 @@ public class DoGaussOp extends Operation {
     
     public DoGaussOp() {
         super("Difference of Gaussians", OpType.DOG);
-        sigma1 = 2;
-        sigma2 = 1;
+        sigma1 = 2.0;
+        sigma2 = 1.0;
     }
     
-    public double getSigma1() {
+    public Double getSigma1() {
         return sigma1;
     }
     
-    public void setSigma1(double sigma1) {
+    public void setSigma1(Double sigma1) {
         this.sigma1 = sigma1;
     }
     
-    public double getSigma2() {
+    public Double getSigma2() {
         return sigma2;
     }
     
-    public void setSigma2(double sigma2) {
+    public void setSigma2(Double sigma2) {
         this.sigma2 = sigma2;
     }
     

@@ -26,6 +26,10 @@ public class OutputOp extends Operation {
         return str;
     }
     
+    @Override
+    public boolean isValid() {
+        return outputDirectory != null && outputDirectory.isDirectory();
+    }
     
     public File getOutputDirectory() {
         return outputDirectory;

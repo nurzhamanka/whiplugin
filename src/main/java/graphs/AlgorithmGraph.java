@@ -37,8 +37,6 @@ public class AlgorithmGraph extends DefaultDirectedGraph<Operation, DefaultEdge>
             mxCell src = (mxCell) edge.getSource();
             mxCell trg = (mxCell) edge.getTarget();
             
-            System.out.println("src: " + (src != null ? src : "null") + "; trg: " + (trg != null ? trg : "null"));
-            
             Operation srcOp = null;
             Operation trgOp = null;
             

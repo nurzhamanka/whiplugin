@@ -30,6 +30,11 @@ public class InputOp extends Operation {
         return str;
     }
     
+    @Override
+    public boolean isValid() {
+        return datasetName != null && !datasetName.isEmpty() && inputDirectory != null && inputDirectory.isDirectory();
+    }
+    
     public String getDatasetName() {
         return datasetName;
     }

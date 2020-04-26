@@ -13,7 +13,7 @@ public class MathDialog extends PropertiesDialog {
     private MathOp mathOp;
     
     private MathType mathType;
-    private Float arg;
+    private Double arg;
     
     private JLabel typeLabel;
     private JRadioButton typeSqrButton;
@@ -106,7 +106,7 @@ public class MathDialog extends PropertiesDialog {
     protected void save() {
         mathOp.setMathType(mathType);
         if (argField.isVisible())
-            mathOp.setArg(((Number) argField.getValue()).floatValue());
+            mathOp.setArg(((Number) argField.getValue()).doubleValue());
         graph.refresh();
     }
 }

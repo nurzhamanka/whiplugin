@@ -5,12 +5,12 @@ import java.util.Map;
 public class MathOp extends Operation {
     
     private MathType mathType;
-    private Float arg;
+    private Double arg;
     
     public MathOp() {
         super("Math", OpType.MATH);
         this.mathType = MathType.SQUARE;
-        this.arg = Float.NaN;
+        this.arg = Double.NaN;
     }
     
     public MathOp(MathType mathType) {
@@ -19,7 +19,7 @@ public class MathOp extends Operation {
     }
     
     public void clearArg() {
-        arg = Float.NaN;
+        arg = Double.NaN;
     }
     
     public MathType getMathType() {
@@ -30,18 +30,18 @@ public class MathOp extends Operation {
         this.mathType = mathType;
     }
     
-    public Float getArg() {
+    public Double getArg() {
         return arg;
     }
     
-    public void setArg(Float arg) {
+    public void setArg(Double arg) {
         this.arg = arg;
     }
     
     @Override
     public boolean isValid() {
         if (mathType == MathType.SQUARE || mathType == MathType.SQRT) return true;
-        if (mathType == MathType.POW) return arg != Float.NaN;
+        if (mathType == MathType.POW) return arg != Double.NaN;
         return true;
     }
     

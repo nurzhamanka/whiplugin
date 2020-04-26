@@ -4,18 +4,18 @@ import java.util.Map;
 
 public class SmoothOp extends Operation {
     
-    private int kernelSize;
+    private Integer kernelSize;
     
     public SmoothOp() {
         super("Mean Smoothing", OpType.MEAN);
         kernelSize = 19;
     }
     
-    public SmoothOp(int kernelSize) {
+    public SmoothOp(Integer kernelSize) {
         this.kernelSize = kernelSize;
     }
     
-    public int getKernelSize() {
+    public Integer getKernelSize() {
         return kernelSize;
     }
     
