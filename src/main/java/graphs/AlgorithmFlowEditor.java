@@ -72,10 +72,6 @@ public class AlgorithmFlowEditor extends GraphEditor {
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/ellipse.png")),
                 "ellipse", 100, 100);
         nodesPalette.addOperation(
-                new Join(),
-                new ImageIcon(GraphEditor.class.getResource("/graphs/img/rhombus.png")),
-                "rhombus", 100, 100);
-        nodesPalette.addOperation(
                 new NormalizeOp(),
                 new ImageIcon(GraphEditor.class.getResource("/graphs/img/rectangle.png")),
                 "rectangle", 100, 100);
